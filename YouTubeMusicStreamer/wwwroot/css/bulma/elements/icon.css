@@ -1,0 +1,51 @@
+.icon,
+.icon-text {
+  --bulma-icon-dimensions: 1.5rem;
+  --bulma-icon-dimensions-small: 1rem;
+  --bulma-icon-dimensions-medium: 2rem;
+  --bulma-icon-dimensions-large: 3rem;
+  --bulma-icon-text-spacing: 0.25em;
+}
+
+.icon {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  height: var(--bulma-icon-dimensions);
+  transition-duration: var(--bulma-duration);
+  transition-property: color;
+  width: var(--bulma-icon-dimensions);
+}
+.icon.is-small {
+  height: var(--bulma-icon-dimensions-small);
+  width: var(--bulma-icon-dimensions-small);
+}
+.icon.is-medium {
+  height: var(--bulma-icon-dimensions-medium);
+  width: var(--bulma-icon-dimensions-medium);
+}
+.icon.is-large {
+  height: var(--bulma-icon-dimensions-large);
+  width: var(--bulma-icon-dimensions-large);
+}
+
+.icon-text {
+  align-items: flex-start;
+  color: inherit;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--bulma-icon-text-spacing);
+  line-height: var(--bulma-icon-dimensions);
+  vertical-align: top;
+}
+.icon-text .icon {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+div.icon-text {
+  display: flex;
+}
+
+/*# sourceMappingURL=icon.css.map */

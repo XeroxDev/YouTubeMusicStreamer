@@ -1,0 +1,23 @@
+﻿  Additional Permission Under Section 7 of AGPL-3.0
+
+     Notwithstanding any other provision of this License, you are hereby
+     granted permission to combine or convey this Program with (and permit
+     the use of) any third-party or platform libraries or components
+     (including, without limitation, the .NET runtime, Windows App SDK,
+     WebView2 runtime, or any other libraries not authored in this project),
+     under their own separate licenses, provided that:
+
+       1. The source code of this Program (and any modifications thereof)
+          remains subject to AGPL-3.0 in full, and is made available
+          whenever you convey executable form.
+
+       2. You do not incorporate any portion of this Program’s source into
+          those separate libraries or components, nor create derivative
+          works of this Program disguised as independent modules.
+
+       3. You do not circumvent the intent of this License by wrapping or
+          re-implementing this Program’s functionality in a proprietary
+          library, any such modifications or substantial re-use of code
+          must themselves be released under AGPL-3.0.
+
+     All other terms of AGPL-3.0 apply without change.

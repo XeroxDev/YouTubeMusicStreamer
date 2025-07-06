@@ -1,0 +1,137 @@
+﻿.info-box {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.info-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.heart {
+    animation: beat 1.5s infinite;
+}
+
+.update-tag {
+    font-size: 0.85rem;
+    border-radius: 1rem;
+    padding: 0.25rem 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.update-uptodate {
+    background-color: rgba(35, 209, 96, 0.2);
+    color: var(--bulma-success-on-scheme);
+}
+
+.update-checking, .update-pending {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.update-available,.update-pendingrestart {
+    background-color: rgba(32, 156, 238, 0.2);
+    color: var(--bulma-info-on-scheme);
+}
+
+.update-error,.update-notinstalled {
+    background-color: rgba(255, 56, 96, 0.2);
+    color: var(--bulma-danger-on-scheme);
+}
+
+.update-button {
+    font-size: 0.85rem;
+    border-radius: 1rem;
+    padding: 0.25rem 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.update-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    vertical-align: text-bottom;
+    border: 0.2em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner .75s linear infinite;
+    margin-right: 0.25rem;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes beat {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.2);
+    }
+}
+/* container + spacing */
+.license-item {
+    background-color: var(--white-ter);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* hover lift */
+.license-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ensure long names wrap cleanly */
+.license-item .media-content .title a {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+/* media-right spacing */
+.license-item .media-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    white-space: nowrap;
+}
+
+/* spacing between tags */
+.license-item .media-right .tag {
+    margin-left: 0.5rem;
+}
+
+/* body text color */
+.license-item .content p {
+    color: var(--text);
+}
+
+/* action button spacing */
+.license-item .content .button {
+    margin-top: 0.5rem;
+}

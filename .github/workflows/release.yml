@@ -1,0 +1,282 @@
+﻿name: Release Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  versioning:
+    if: "!startsWith(github.event.head_commit.message, 'chore(main): release ')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Release Please
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-build:
+    if: "startsWith(github.event.head_commit.message, 'chore(main): release ')"
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      max-parallel: 3
+      matrix:
+        arch: [ x64, x86, arm64 ]
+    outputs:
+      os: ${{ steps.set-output.outputs.os }}
+      vpk_tag: ${{ steps.set-output.outputs.vpk_tag }}
+      vpk_output_dir: ${{ steps.set-output.outputs.vpk_output_dir }}
+      vpk_repo_url: ${{ steps.set-output.outputs.vpk_repo_url }}
+      vpk_release_name: ${{ steps.set-output.outputs.vpk_release_name }}
+      vpk_target_commitish: ${{ steps.set-output.outputs.vpk_target_commitish }}
+      release-notes-file: ${{ steps.set-output.outputs.release-notes-file }}
+      dotnet_version: ${{ steps.set-output.outputs.dotnet_version }}
+    env:
+      OS: win
+      APP_NAME: YouTubeMusicStreamer
+      DOTNET_VERSION: "9.0"
+      ARCH: ${{ matrix.arch }}
+      RELEASE_NOTES_FILE: release-notes.md
+      VPK_OUTPUT_DIR: Releases
+      VPK_PACK_AUTHORS: XeroxDev
+      VPK_PACK_TITLE: "YouTube Music Streamer"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare version & env
+        shell: pwsh
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+        run: .\scripts\prepare-build-env.ps1
+
+      - name: Set dynamic VPK env vars
+        shell: pwsh
+        run: |
+          $envBlock = @"
+          VPK_CHANNEL=$($Env:OS)-$($Env:ARCH)
+          VPK_RUNTIME=$($Env:OS)-$($Env:ARCH)
+          VPK_PACK_DIR=./publish/$($Env:OS)-$($Env:ARCH)
+          VPK_FRAMEWORK=webview2,net$($Env:DOTNET_VERSION)-$($Env:ARCH)-desktop
+          VPK_ICON=./$($Env:APP_NAME)/wwwroot/favicon.ico
+          VPK_SPLASH_IMAGE=./$($Env:APP_NAME)/Resources/Splash/splash.png
+          VPK_PACK_VERSION=$($Env:VERSION)
+          VPK_RELEASE_NAME=v$($Env:VERSION)
+          VPK_TAG=v$($Env:VERSION)
+          VPK_TARGET_COMMITISH=$($Env:GITHUB_SHA)
+          VPK_REPO_URL=https://github.com/$($Env:GITHUB_REPOSITORY)
+          VPK_PACK_ID=$($Env:APP_NAME)
+          VPK_MAIN_EXE=$($Env:APP_NAME).exe
+          "@
+          
+          Add-Content -Path $Env:GITHUB_ENV -Value $envBlock -Encoding utf8
+
+
+      - name: Generate release notes
+        shell: pwsh
+        continue-on-error: true
+        run: .\scripts\generate-release-notes.ps1
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+
+      - name: Publish .NET application
+        shell: pwsh
+        run: dotnet publish -c Release -p:PublishProfile=${{ env.VPK_CHANNEL }}
+
+      - name: Install VPK tool
+        shell: pwsh
+        run: dotnet tool install -g vpk
+
+      - name: VPK download
+        shell: pwsh
+        continue-on-error: true
+        run: vpk download github --outputDir ${{env.VPK_OUTPUT_DIR}} --channel ${{env.VPK_CHANNEL}} --repoUrl ${{env.VPK_REPO_URL}} --token ${{ secrets.GITHUB_TOKEN }}
+
+      - name: VPK pack
+        shell: pwsh
+        run: |
+          # assemble the mandatory args
+          $args = @(
+            '--outputDir';   $Env:VPK_OUTPUT_DIR
+            '--channel';     $Env:VPK_CHANNEL
+            '--runtime';     $Env:VPK_RUNTIME
+            '--packId';      $Env:VPK_PACK_ID
+            '--packVersion'; $Env:VPK_PACK_VERSION
+            '--packDir';     $Env:VPK_PACK_DIR
+            '--packAuthors'; $Env:VPK_PACK_AUTHORS
+            '--packTitle';   $Env:VPK_PACK_TITLE
+            '--icon';        $Env:VPK_ICON
+            '--mainExe';     $Env:VPK_MAIN_EXE
+            '--framework';   $Env:VPK_FRAMEWORK
+            '--splashImage'; $Env:VPK_SPLASH_IMAGE
+          )
+          
+          # conditionally add releaseNotes
+          if ($Env:RELEASE_NOTES_FILE -and (Test-Path $Env:RELEASE_NOTES_FILE)) {
+            Write-Host "✅ Including release notes from $Env:RELEASE_NOTES_FILE"
+            $args += '--releaseNotes'
+            $args += $Env:RELEASE_NOTES_FILE
+          }
+          else {
+            Write-Warning "⚠️ No release-notes file found at '$Env:RELEASE_NOTES_FILE' — skipping --releaseNotes"
+          }
+          
+          # run the pack
+          Write-Host "Running: vpk pack $($args -join ' ')"
+          vpk pack @args
+
+      - name: Set outputs (x64 only)
+        id: set-output
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          # write to the GITHUB_OUTPUT file instead of deprecated set-output
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "vpk_tag=$Env:VPK_TAG"
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "vpk_output_dir=$Env:VPK_OUTPUT_DIR"
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "vpk_repo_url=$Env:VPK_REPO_URL"
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "vpk_release_name=$Env:VPK_RELEASE_NAME"
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "vpk_target_commitish=$Env:VPK_TARGET_COMMITISH"
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "os=$Env:OS"
+          Add-Content -Path $Env:GITHUB_OUTPUT -Value "dotnet_version=$Env:DOTNET_VERSION"
+          
+          if (Test-Path $Env:RELEASE_NOTES_FILE) {
+            Add-Content -Path $Env:GITHUB_OUTPUT -Value "release-notes-file=$Env:RELEASE_NOTES_FILE"
+          } else {
+            Write-Warning "No release-notes file found; skipping release-notes-file output"
+          }
+
+      - name: Upload release notes
+        if: matrix.arch == 'x64' && steps.set-output.outputs.release-notes-file != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ${{ env.RELEASE_NOTES_FILE }}
+
+      - name: Upload VPK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vpk-artifacts-${{ matrix.arch }}
+          path: ${{ env.VPK_OUTPUT_DIR }}
+  
+  release-upload:
+    if: "startsWith(github.event.head_commit.message, 'chore(main): release ')"
+    needs: release-build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        arch: [ x64, x86, arm64 ]
+    env:
+      VPK_OUTPUT_DIR: ${{needs.release-build.outputs.vpk_output_dir}}
+      VPK_CHANNEL: ${{needs.release-build.outputs.os}}-${{matrix.arch}}
+      VPK_REPO_URL: ${{needs.release-build.outputs.vpk_repo_url}}
+      VPK_RELEASE_NAME: ${{needs.release-build.outputs.vpk_release_name}}
+      VPK_TAG: ${{needs.release-build.outputs.vpk_tag}}
+      VPK_TARGET_COMMITISH: ${{needs.release-build.outputs.vpk_target_commitish}}
+      DOTNET_VERSION: ${{needs.release-build.outputs.dotnet_version}}
+    steps:
+      - name: Download VPK artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: vpk-artifacts-${{ matrix.arch }}
+          path: ${{ env.VPK_OUTPUT_DIR }}
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}.x
+      - name: Install VPK tool
+        shell: pwsh
+        run: dotnet tool install -g vpk
+      - name: VPK upload
+        shell: pwsh
+        run: vpk upload github --merge --outputDir ${{env.VPK_OUTPUT_DIR}} --channel ${{env.VPK_CHANNEL}} --repoUrl ${{env.VPK_REPO_URL}} --token ${{ secrets.GITHUB_TOKEN }} --releaseName ${{env.VPK_RELEASE_NAME}} --tag ${{env.VPK_TAG}} --targetCommitish ${{env.VPK_TARGET_COMMITISH}}
+  
+  release-publish:
+    if: "startsWith(github.event.head_commit.message, 'chore(main): release ')"
+    needs: [ release-build, release-upload ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release notes artifact
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: .
+
+      - name: Update GitHub Release description & publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES_FILE: ${{ needs.release-build.outputs.release-notes-file }}
+          TAG: ${{ needs.release-build.outputs.vpk_tag }}
+        run: |
+          set -euo pipefail
+
+          if [[ -f "$RELEASE_NOTES_FILE" ]]; then
+            echo "✅ Using release notes from '$RELEASE_NOTES_FILE'"
+            gh release edit "$TAG" \
+              --notes-file "$RELEASE_NOTES_FILE"
+          else
+            echo "⚠️ No release-notes file found; linking CHANGELOG.md instead"
+            gh release edit "$TAG" \
+              --notes "See [CHANGELOG.md](https://github.com/${{github.repository}}/blob/main/CHANGELOG.md)"
+          fi
+
+          echo "🚀 Publishing the release (clearing draft status)"
+          gh release edit "$TAG" --draft=false
+      - name: "Find and update closed PRs with 'autorelease: pending'"
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          LABEL="autorelease: published"
+          echo "🔍 Ensuring label '$LABEL' exists…"
+          if ! gh label list --json name --jq '.[].name' | grep -Fxq "$LABEL"; then
+            echo "➕ Creating label '$LABEL'"
+            gh label create "$LABEL" --color "0E8A16" --description "Marked by release workflow"
+          else
+            echo "✅ Label '$LABEL' already exists"
+          fi
+
+          echo "🔍 Looking for closed PRs labeled 'autorelease: pending'…"
+          PRS=$(gh pr list --state closed --label 'autorelease: pending' --json number --jq '.[].number')
+          if [[ -z "$PRS" ]]; then
+            echo "✅ No closed PRs found with label 'autorelease: pending'."
+            exit 0
+          fi
+
+          for PR in $PRS; do
+            echo "→ PR #$PR"
+            if gh pr edit "$PR" --remove-label "autorelease: pending"; then
+              echo "✔️ Removed 'autorelease: pending'"
+            else
+              echo "⚠️ 'autorelease: pending' not present"
+            fi
+
+            if gh pr edit "$PR" --add-label "$LABEL"; then
+              echo "✔️ Added '$LABEL'"
+            else
+              echo "⚠️ Could not add '$LABEL'"
+            fi
+          done

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <title>YouTubeMusicStreamer</title>
+    <base href="/"/>
+    <link rel="stylesheet" href="css/app.css"/>
+    <link rel="stylesheet" href="YouTubeMusicStreamer.styles.css"/>
+    <link rel="icon" href="favicon.svg"/>
+    <script src="js/index.js"></script>
+</head>
+
+<body class="is-unselectable">
+
+<div class="status-bar-safe-area"></div>
+
+<div id="app">
+    <div class="hero is-fullheight is-flex is-justify-content-center is-align-items-center">
+        <div class="has-text-centered">
+            <h3>Loading...</h3>
+            <h1 class="title is-1 mat-icon mt-4 a-rotate">progress_activity</h1>
+        </div>
+    </div>
+</div>
+
+<div id="blazor-error-ui" class="notification is-danger is-position-absolute left-0 bottom-0 right-0 has-text-white is-radiusless">
+    <button class="dismiss delete"></button>
+    <p>An unknown error has occurred, but luckily we could prevent the app to crash. But you still have to reload to continue.</p>
+    <button class="reload button is-primary mt-4">Reload</button>
+</div>
+
+<script src="_framework/blazor.webview.js" autostart="false"></script>
+
+</body>
+
+</html>

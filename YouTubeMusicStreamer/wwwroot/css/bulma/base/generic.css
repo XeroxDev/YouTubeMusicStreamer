@@ -1,0 +1,196 @@
+:root {
+  --bulma-body-background-color: var(--bulma-scheme-main);
+  --bulma-body-size: 1em;
+  --bulma-body-min-width: 300px;
+  --bulma-body-rendering: optimizeLegibility;
+  --bulma-body-family: var(--bulma-family-primary);
+  --bulma-body-overflow-x: hidden;
+  --bulma-body-overflow-y: scroll;
+  --bulma-body-color: var(--bulma-text);
+  --bulma-body-font-size: 1em;
+  --bulma-body-weight: var(--bulma-weight-normal);
+  --bulma-body-line-height: 1.5;
+  --bulma-code-family: var(--bulma-family-code);
+  --bulma-code-padding: 0.25em 0.5em 0.25em;
+  --bulma-code-weight: normal;
+  --bulma-code-size: 0.875em;
+  --bulma-small-font-size: 0.875em;
+  --bulma-hr-background-color: var(--bulma-background);
+  --bulma-hr-height: 2px;
+  --bulma-hr-margin: 1.5rem 0;
+  --bulma-strong-color: var(--bulma-text-strong);
+  --bulma-strong-weight: var(--bulma-weight-semibold);
+  --bulma-pre-font-size: 0.875em;
+  --bulma-pre-padding: 1.25rem 1.5rem;
+  --bulma-pre-code-font-size: 1em;
+}
+
+html {
+  background-color: var(--bulma-body-background-color);
+  font-size: var(--bulma-body-size);
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  min-width: var(--bulma-body-min-width);
+  overflow-x: var(--bulma-body-overflow-x);
+  overflow-y: var(--bulma-body-overflow-y);
+  text-rendering: var(--bulma-body-rendering);
+  text-size-adjust: 100%;
+}
+
+article,
+aside,
+figure,
+footer,
+header,
+hgroup,
+section {
+  display: block;
+}
+
+body,
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: var(--bulma-body-family);
+}
+
+code,
+pre {
+  -moz-osx-font-smoothing: auto;
+  -webkit-font-smoothing: auto;
+  font-family: var(--bulma-code-family);
+}
+
+body {
+  color: var(--bulma-body-color);
+  font-size: var(--bulma-body-font-size);
+  font-weight: var(--bulma-body-weight);
+  line-height: var(--bulma-body-line-height);
+}
+
+a,
+button {
+  cursor: pointer;
+}
+a:focus-visible,
+button:focus-visible {
+  outline-color: hsl(var(--bulma-focus-h), var(--bulma-focus-s), var(--bulma-focus-l));
+  outline-offset: var(--bulma-focus-offset);
+  outline-style: var(--bulma-focus-style);
+  outline-width: var(--bulma-focus-width);
+}
+a:focus-visible:active,
+button:focus-visible:active {
+  outline-width: 1px;
+}
+a:active,
+button:active {
+  outline-width: 1px;
+}
+
+a {
+  color: var(--bulma-link-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition-duration: var(--bulma-duration);
+  transition-property: background-color, border-color, color;
+}
+a strong {
+  color: currentColor;
+}
+
+button {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  transition-duration: var(--bulma-duration);
+  transition-property: background-color, border-color, color;
+}
+
+code {
+  background-color: var(--bulma-code-background);
+  border-radius: 0.5em;
+  color: var(--bulma-code);
+  font-size: var(--bulma-code-size);
+  font-weight: var(--bulma-code-weight);
+  padding: var(--bulma-code-padding);
+}
+
+hr {
+  background-color: var(--bulma-hr-background-color);
+  border: none;
+  display: block;
+  height: var(--bulma-hr-height);
+  margin: var(--bulma-hr-margin);
+}
+
+img {
+  height: auto;
+  max-width: 100%;
+}
+
+input[type=checkbox],
+input[type=radio] {
+  vertical-align: baseline;
+}
+
+small {
+  font-size: var(--bulma-small-font-size);
+}
+
+span {
+  font-style: inherit;
+  font-weight: inherit;
+}
+
+strong {
+  color: var(--bulma-strong-color);
+  font-weight: var(--bulma-strong-weight);
+}
+
+svg {
+  height: auto;
+  width: auto;
+}
+
+fieldset {
+  border: none;
+}
+
+pre {
+  -webkit-overflow-scrolling: touch;
+  background-color: var(--bulma-pre-background);
+  color: var(--bulma-pre);
+  font-size: var(--bulma-pre-font-size);
+  overflow-x: auto;
+  padding: var(--bulma-pre-padding);
+  white-space: pre;
+  word-wrap: normal;
+}
+pre code {
+  background-color: transparent;
+  color: currentColor;
+  font-size: var(--bulma-pre-code-font-size);
+  padding: 0;
+}
+
+table td,
+table th {
+  vertical-align: top;
+}
+table td:not([align]),
+table th:not([align]) {
+  text-align: inherit;
+}
+table th {
+  color: var(--bulma-text-strong);
+}
+
+/*# sourceMappingURL=generic.css.map */

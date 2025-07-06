@@ -1,0 +1,58 @@
+﻿@page "/logging"
+
+<PageHeader Title="Logging" SubTitle="Here you can access everything logging related."></PageHeader>
+
+<TabControl>
+    <TabPage Text="Global" Icon="public">
+        <div class="card">
+            <div class="card-content">
+                <div class="content is-flex is-flex-direction-column is-gap-1">
+                    <div class="columns">
+                        <div class="field column">
+                            <label class="label">Log Level <span class="has-text-danger is-size-7">Requires restart</span></label>
+                            <div class="control is-expanded">
+                                <div class="select is-fullwidth">
+                                    <select @bind="_logLevel">
+                                        @foreach (var logLevel in GetLogLevels())
+                                        {
+                                            <option value="@logLevel">@logLevel</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="help">Set the log level for the application.</p>
+                        </div>
+                    </div>
+
+                    <button class="button is-info" @onclick="OpenLogFolder">Open Log Folder</button>
+                </div>
+            </div>
+            <footer class="card-footer">
+                <button class="button is-ghost card-footer-item" @onclick="() => ResetGlobalSettings()">Reset</button>
+                <button class="button is-ghost card-footer-item" @onclick="SaveGlobalSettings">Save</button>
+            </footer>
+        </div>
+    </TabPage>
+
+    <TabPage Text="Logs" Icon="list">
+        <div class="card">
+            <div class="card-content">
+                <p>Displays the last 100 lines</p>
+                <div class="field column">
+                    <label class="label">Colorless Mode</label>
+                    <div class="control is-expanded">
+                        <Toggle @bind-Value="_colorlessMode" OffLabel="Disabled" OnLabel="Enabled"/>
+                    </div>
+                </div>
+                <div class="content is-family-monospace is-size-6">
+                    <pre class="has-background-dark" style="overflow: hidden; text-wrap: wrap;">
+                        @foreach (var log in _logLines)
+                        {
+                            @((MarkupString)$"{PrettyLine(log, _colorlessMode)}\n")
+                        }
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </TabPage>
+</TabControl>

@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Id": "Microsoft.Graphics.Win2D",
+    "Version": "1.2.0",
+    "License": "MIT",
+    "LicenseUrl": "https://raw.githubusercontent.com/microsoft/Win2D/refs/heads/winappsdk/main/LICENSE.txt",
+    "Authors": "Microsoft",
+    "Copyright": "Copyright (c) Microsoft Corporation. All rights reserved.",
+    "ProjectUrl": "https://microsoft.github.io/Win2D/html/Introduction.htm"
+  }
+]

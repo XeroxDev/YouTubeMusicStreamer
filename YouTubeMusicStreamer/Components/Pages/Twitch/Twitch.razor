@@ -1,0 +1,84 @@
+﻿@page "/twitch"
+@using YouTubeMusicStreamer.Components.Pages.Twitch.Components
+@using YouTubeMusicStreamer.Utils
+
+<PageHeader Title="Twitch Settings" SubTitle="Here you can configure your Twitch Integration Settings."></PageHeader>
+
+<TabControl>
+    <TabPage Text="Global" Icon="public">
+        <div class="card">
+            <div class="card-content">
+                <div class="content is-flex is-flex-direction-column is-gap-1">
+                    <div class="columns">
+                        @*<div class="field column">
+                            <label class="label">Twitch Chat Channel <small class=" is-size-7 has-text-danger">Requires Restart</small></label>
+                            <div class="control is-expanded">
+                                <input class="input" type="text" placeholder="Twitch Chat Channel" @bind="_twitchChatChannel">
+                            </div>
+                            <p class="help">The Twitch Chat Channel the application should connect to.</p>
+                            <p class="help">Default: <code>@CoalesceEmpty(twitchService.Username, "Connected account's channel")</code></p>
+                        </div>*@
+
+                        <div class="field column">
+                            <label class="label">Command Prefix</label>
+                            <div class="control is-expanded">
+                                <input class="input" type="text" placeholder="Command Prefix" @bind="_twitchCommandPrefix">
+                            </div>
+                            <p class="help">The prefix that should be used for commands in the Twitch Chat. Example: <code>@(_twitchCommandPrefix)request</code></p>
+                            <p class="help">Default: <code>!</code></p>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                        <div class="field column">
+                            <label class="label">Send Message on Connect</label>
+                            <div class="control is-expanded">
+                                <Toggle @bind-Value="_twitchSendMessageOnConnect" OffLabel="Disabled" OnLabel="Enabled"/>
+                            </div>
+                            <p class="help">Send a message when the application connects to the Twitch Chat.</p>
+                            <p class="help">Default: <code>Enabled</code></p>
+                        </div>
+
+                        <div class="field column">
+                            <label class="label">Connect Message</label>
+                            <div class="control is-expanded">
+                                <input class="input" type="text" placeholder="Connect Message" @bind="_twitchConnectMessage">
+                            </div>
+                            <p class="help">The message that should be sent when the application connects to the Twitch Chat.</p>
+                            <p class="help">Default: <code>@AppUtils.AppName connected</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="card-footer">
+                <button class="button is-ghost card-footer-item" @onclick="() => ResetGlobalSettings()">Reset</button>
+                <button class="button is-ghost card-footer-item" @onclick="SaveGlobalSettings">Save</button>
+            </footer>
+        </div>
+    </TabPage>
+    <TabPage Text="Command" Icon="code">
+        <div class="is-flex is-flex-direction-column is-gap-1">
+            @foreach (var command in _commands)
+            {
+                <div class="card">
+                    <header class="card-header cursor-pointer" data-collapsible="@ToDataAttribute(command.Name)">
+                        <h2 class="card-header-title is-flex is-gap-1 is-size-4">
+                            <span>@command.Name.Replace("Command", "")</span>
+                            <span class="is-size-6 has-text-weight-normal">@command.Attribute.Description</span>
+                        </h2>
+                        <button class="card-header-icon" aria-label="show/hide">
+                        <span class="icon collapsible closed" @attributes="CommandDataAttribute(command.Name)">
+                            <i class="mat-icon">keyboard_arrow_down</i>
+                        </span>
+                        </button>
+                    </header>
+                    <div class="card-content collapsible closed" @attributes="CommandDataAttribute(command.Name)">
+                        <div class="content">
+                            <TwitchCommandSettings @key="command.Name" Command="command" CommandPrefix="@_twitchCommandPrefix"/>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </TabPage>
+</TabControl>

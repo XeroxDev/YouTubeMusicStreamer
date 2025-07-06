@@ -1,0 +1,102 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.level:not(:last-child) {
+  margin-bottom: var(--bulma-block-spacing);
+}
+
+.level {
+  --bulma-level-item-spacing: calc(var(--bulma-block-spacing) * 0.5);
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--bulma-level-item-spacing);
+}
+.level code {
+  border-radius: var(--bulma-radius);
+}
+.level img {
+  display: inline-block;
+  vertical-align: top;
+}
+.level.is-mobile {
+  display: flex;
+  flex-direction: row;
+}
+.level.is-mobile .level-left,
+.level.is-mobile .level-right {
+  display: flex;
+}
+.level.is-mobile .level-item:not(.is-narrow) {
+  flex-grow: 1;
+}
+@media screen and (min-width: 769px), print {
+  .level {
+    display: flex;
+    flex-direction: row;
+  }
+  .level > .level-item:not(.is-narrow) {
+    flex-grow: 1;
+  }
+}
+
+.level-item {
+  align-items: center;
+  display: flex;
+  flex-basis: auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+  justify-content: center;
+}
+.level-item .title,
+.level-item .subtitle {
+  margin-bottom: 0;
+}
+
+.level-left,
+.level-right {
+  flex-basis: auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+  gap: calc(var(--bulma-block-spacing) * 0.5);
+}
+.level-left .level-item.is-flexible,
+.level-right .level-item.is-flexible {
+  flex-grow: 1;
+}
+
+.level-left {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+@media screen and (min-width: 769px), print {
+  .level-left {
+    flex-direction: row;
+  }
+}
+
+.level-right {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+@media screen and (min-width: 769px), print {
+  .level-right {
+    flex-direction: row;
+  }
+}
+
+/*# sourceMappingURL=level.css.map */

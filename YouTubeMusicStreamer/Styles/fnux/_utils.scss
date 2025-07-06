@@ -1,0 +1,53 @@
+﻿$spacing: (
+        0: 0,
+        1: 0.25rem,
+        2: 0.5rem,
+        3: 1rem,
+        4: 1.5rem,
+        5: 3rem,
+        6: 6rem
+);
+
+@each $key, $value in $spacing {
+  .bottom-#{$key} {
+    bottom: $value;
+  }
+  .top-#{$key} {
+    top: $value;
+  }
+  .left-#{$key} {
+    left: $value;
+  }
+  .right-#{$key} {
+    right: $value;
+  }
+}
+
+.a-rotate {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.mat-icon.hover-fill {
+  transition: font-variation-settings 0.5s;
+
+  &:hover {
+    font-variation-settings: 'FILL' 1;
+  }
+}

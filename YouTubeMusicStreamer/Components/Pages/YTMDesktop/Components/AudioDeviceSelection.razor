@@ -1,0 +1,29 @@
+﻿<div class="field column">
+    <label class="label">Audio Device</label>
+    <div class="field has-addons">
+        <div class="control is-expanded">
+            <div class="select is-fullwidth">
+                @if (_audioDevices.Count == 0)
+                {
+                    <option value="" disabled>No Audio Devices found</option>
+                }
+                else
+                {
+                    <select @bind="Value">
+                        <option value="" disabled>Select an Audio Device</option>
+                        @foreach (var device in _audioDevices)
+                        {
+                            <option @key="device.Id" value="@device.Id">@device.Name</option>
+                        }
+                    </select>
+                }
+            </div>
+        </div>
+        <div class="control">
+            <button type="submit" class="button is-primary @(_refreshing ? "is-loading" : "")" @onclick="ReloadAudioDevices" disabled="@_refreshing">
+                Reload
+            </button>
+        </div>
+    </div>
+    <p class="help">The audio device to stream to the client</p>
+</div>

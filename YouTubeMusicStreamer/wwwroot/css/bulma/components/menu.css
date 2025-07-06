@@ -1,0 +1,119 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.menu-list a,
+.menu-list button,
+.menu-list .menu-item {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+}
+
+.menu {
+  --bulma-menu-item-h: var(--bulma-scheme-h);
+  --bulma-menu-item-s: var(--bulma-scheme-s);
+  --bulma-menu-item-l: var(--bulma-scheme-main-l);
+  --bulma-menu-item-background-l: var(--bulma-scheme-main-l);
+  --bulma-menu-item-background-l-delta: 0%;
+  --bulma-menu-item-hover-background-l-delta: var(--bulma-hover-background-l-delta);
+  --bulma-menu-item-active-background-l-delta: var(--bulma-active-background-l-delta);
+  --bulma-menu-item-color-l: var(--bulma-text-l);
+  --bulma-menu-item-radius: var(--bulma-radius-small);
+  --bulma-menu-item-selected-h: var(--bulma-link-h);
+  --bulma-menu-item-selected-s: var(--bulma-link-s);
+  --bulma-menu-item-selected-l: var(--bulma-link-l);
+  --bulma-menu-item-selected-background-l: var(--bulma-link-l);
+  --bulma-menu-item-selected-color-l: var(--bulma-link-invert-l);
+  --bulma-menu-list-border-left: 1px solid var(--bulma-border);
+  --bulma-menu-list-line-height: 1.25;
+  --bulma-menu-list-link-padding: 0.5em 0.75em;
+  --bulma-menu-nested-list-margin: 0.75em;
+  --bulma-menu-nested-list-padding-left: 0.75em;
+  --bulma-menu-label-color: var(--bulma-text-weak);
+  --bulma-menu-label-font-size: 0.75em;
+  --bulma-menu-label-letter-spacing: 0.1em;
+  --bulma-menu-label-spacing: 1em;
+}
+
+.menu {
+  font-size: var(--bulma-size-normal);
+}
+.menu.is-small {
+  font-size: var(--bulma-size-small);
+}
+.menu.is-medium {
+  font-size: var(--bulma-size-medium);
+}
+.menu.is-large {
+  font-size: var(--bulma-size-large);
+}
+
+.menu-list {
+  line-height: var(--bulma-menu-list-line-height);
+}
+.menu-list a,
+.menu-list button,
+.menu-list .menu-item {
+  background-color: hsl(var(--bulma-menu-item-h), var(--bulma-menu-item-s), calc(var(--bulma-menu-item-background-l) + var(--bulma-menu-item-background-l-delta)));
+  border-radius: var(--bulma-menu-item-radius);
+  color: hsl(var(--bulma-menu-item-h), var(--bulma-menu-item-s), var(--bulma-menu-item-color-l));
+  display: block;
+  padding: var(--bulma-menu-list-link-padding);
+  text-align: left;
+  width: 100%;
+}
+.menu-list a:hover,
+.menu-list button:hover,
+.menu-list .menu-item:hover {
+  --bulma-menu-item-background-l-delta: var(--bulma-menu-item-hover-background-l-delta);
+}
+.menu-list a:active,
+.menu-list button:active,
+.menu-list .menu-item:active {
+  --bulma-menu-item-background-l-delta: var(--bulma-menu-item-active-background-l-delta);
+}
+.menu-list a.is-active, .menu-list a.is-selected,
+.menu-list button.is-active,
+.menu-list button.is-selected,
+.menu-list .menu-item.is-active,
+.menu-list .menu-item.is-selected {
+  --bulma-menu-item-h: var(--bulma-menu-item-selected-h);
+  --bulma-menu-item-s: var(--bulma-menu-item-selected-s);
+  --bulma-menu-item-l: var(--bulma-menu-item-selected-l);
+  --bulma-menu-item-background-l: var(--bulma-menu-item-selected-background-l);
+  --bulma-menu-item-color-l: var(--bulma-menu-item-selected-color-l);
+}
+.menu-list li ul {
+  border-inline-start: var(--bulma-menu-list-border-left);
+  margin: var(--bulma-menu-nested-list-margin);
+  padding-inline-start: var(--bulma-menu-nested-list-padding-left);
+}
+
+.menu-label {
+  color: var(--bulma-menu-label-color);
+  font-size: var(--bulma-menu-label-font-size);
+  letter-spacing: var(--bulma-menu-label-letter-spacing);
+  text-transform: uppercase;
+}
+.menu-label:not(:first-child) {
+  margin-top: var(--bulma-menu-label-spacing);
+}
+.menu-label:not(:last-child) {
+  margin-bottom: var(--bulma-menu-label-spacing);
+}
+
+/*# sourceMappingURL=menu.css.map */

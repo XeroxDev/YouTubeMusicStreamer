@@ -1,0 +1,240 @@
+﻿.switch[type=checkbox] {
+  display: inline-block;
+  position: absolute;
+  opacity: 0;
+  outline: 0;
+  user-select: none;
+
+  & + label {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &:focus + label {
+    &::after, &::before, &:after, &:before {
+      outline: 1px dotted #000;
+    }
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+
+    + label {
+      opacity: 0.5;
+
+      &::before, &:before, &::after, &:after {
+        opacity: 0.5;
+      }
+
+      &:hover {
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  + label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 1rem;
+    height: 2.5em;
+    line-height: 1.5;
+    padding-left: 3.5rem;
+    padding-top: 0.2rem;
+    cursor: pointer;
+
+    &::before, &:before {
+      position: absolute;
+      display: block;
+      top: calc(50% - 1.5rem * .5);
+      left: 0;
+      width: 3rem;
+      height: 1.5rem;
+      border: 0.1rem solid transparent;
+      border-radius: 24px;
+      background: var(--bulma-primary);
+      content: "";
+    }
+
+    &::after, &:after {
+      display: block;
+      position: absolute;
+      top: calc(50% - 1rem * .5);
+      left: 0.25rem;
+      width: 1rem;
+      height: 1rem;
+      transform: translate3d(0, 0, 0);
+      border-radius: 50%;
+      background: var(--bulma-light);
+      transition: all 0.25s ease-out;
+      content: "";
+    }
+
+    .switch-active, .switch-inactive {
+      font-size: 0.9rem;
+      z-index: 1;
+      margin-top: -4px;
+    }
+
+    &.has-text-inside {
+      .switch-inactive {
+        margin-left: -1.925rem;
+      }
+
+      .switch-active {
+        margin-left: -3.25rem;
+      }
+    }
+  }
+
+  &:checked + label {
+    &::before, &:before {
+      background: var(--bulma-link);
+    }
+
+    &::after {
+      left: 1.625rem;
+    }
+  }
+
+  &.is-outlined {
+    + label {
+      &::before, &:before {
+        background-color: transparent;
+        border-color: var(--bulma-primary);
+      }
+
+      &::after, &:after {
+        background: var(--bulma-primary);
+      }
+    }
+
+    &:checked + label {
+      &::before, &:before {
+        background-color: transparent;
+        border-color: var(--bulma-link);
+      }
+
+      &::after, &:after {
+        background: var(--bulma-link);
+      }
+    }
+  }
+
+  &.is-small {
+    + label {
+      font-size: 0.75rem;
+      padding-left: 2.75rem;
+
+      &::before, &:before {
+        top: calc(50% - 1.125rem * .5);
+        width: 2.25rem;
+        height: 1.125rem;
+      }
+
+      &::after, &:after {
+        top: calc(50% - .625rem * .5);
+        width: 0.625rem;
+        height: 0.625rem;
+      }
+
+      .switch-active, .switch-inactive {
+        font-size: 0.65rem;
+      }
+
+      &.has-text-inside {
+        .switch-inactive {
+          margin-left: -1.55rem;
+        }
+
+        .switch-active {
+          margin-left: -2.5rem;
+        }
+      }
+    }
+
+    &:checked + label::after {
+      left: 1.25rem;
+    }
+  }
+
+  &.is-medium {
+    + label {
+      font-size: 1.25rem;
+      padding-left: 4.25rem;
+
+      &::before, &:before {
+        top: calc(50% - 1.875rem * .5);
+        width: 3.75rem;
+        height: 1.875rem;
+      }
+
+      &::after, &:after {
+        top: calc(50% - 1.375rem * .5);
+        width: 1.375rem;
+        height: 1.375rem;
+      }
+
+      .switch-active, .switch-inactive {
+        font-size: 1.15rem;
+      }
+
+      &.has-text-inside {
+        .switch-inactive {
+          margin-left: -2.3rem;
+        }
+
+        .switch-active {
+          margin-left: -4rem;
+        }
+      }
+    }
+
+    &:checked + label::after {
+      left: 2rem;
+    }
+  }
+
+  &.is-large {
+    + label {
+      font-size: 1.5rem;
+      height: 2.5em;
+      padding-left: 5rem;
+
+      &::before, &:before {
+        top: calc(50% - 2.25rem * .5);
+        width: 4.5rem;
+        height: 2.25rem;
+      }
+
+      &::after, &:after {
+        top: calc(50% - 1.75rem * .5);
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+
+      .switch-active, .switch-inactive {
+        font-size: 1.4rem;
+      }
+
+      &.has-text-inside {
+        .switch-inactive {
+          margin-left: -2.675rem;
+        }
+
+        .switch-active {
+          margin-left: -4.75rem;
+        }
+      }
+    }
+
+    &:checked + label::after {
+      left: 2.375rem;
+    }
+  }
+}
+
+.field-body .switch[type=checkbox] + label {
+  margin-top: 0.375em;
+}

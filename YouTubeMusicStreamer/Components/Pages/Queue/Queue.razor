@@ -1,0 +1,133 @@
+﻿@page "/queue"
+
+<PageHeader Title="Queue" SubTitle="Here you can see the current queue of songs that are going to be played."></PageHeader>
+
+<TabControl>
+    <TabPage Text="Global" Icon="public">
+        <div class="card">
+            <div class="card-content">
+                <div class="content is-flex is-flex-direction-column">
+                    <div class="columns">
+                        <div class="field column">
+                            <label class="label">Queue Active</label>
+                            <div class="control is-expanded">
+                                <Toggle @bind-Value="_queueActive" OffLabel="Disabled" OnLabel="Enabled"/>
+                            </div>
+                            <p class="help">Enable or disable the queue.</p>
+                        </div>
+
+                        <div class="field column">
+                            <label class="label">Embed entire song</label>
+                            <div class="control is-expanded">
+                                <Toggle @bind-Value="_queueItemAsIFrame" OffLabel="Disabled" OnLabel="Enabled"/>
+                            </div>
+                            <p class="help">Should the song be embedded in the table or just static information.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="card-footer">
+                <button class="button is-ghost card-footer-item" @onclick="() => ResetGlobalSettings()">Reset</button>
+                <button class="button is-ghost card-footer-item" @onclick="SaveGlobalSettings">Save</button>
+            </footer>
+        </div>
+    </TabPage>
+    <TabPage Text="Queue" Icon="list">
+        <div class="card">
+            <div class="card-content">
+                <div class="content is-flex is-flex-direction-column is-gap-1">
+                    @if (_queueItems.Count > 0)
+                    {
+                        <button class="button is-danger" @onclick="ClearQueue">Clear Queue</button>
+                        <table class="table is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th style="width: 40%">Song</th>
+                                <th style="width: 40%">Details</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            @foreach (var item in _queueItems)
+                            {
+                                <tr>
+                                    <td class="song-cell">
+                                        @{ var embed = item.Embed; }
+                                        @if (settingsService.GetAppSettings().QueueItemAsIFrame)
+                                        {
+                                            <figure class="image is-16by9">
+                                                <iframe class="has-ratio" src="https://www.youtube.com/embed/@(item.Id)" title="YouTube video player" referrerpolicy="no-referrer"
+                                                        style="border: none;"></iframe>
+                                            </figure>
+                                        }
+                                        else
+                                        {
+                                            @if (embed is null)
+                                            {
+                                                <p>No information available</p>
+                                            }
+                                            else
+                                            {
+                                                <figure class="image is-16by9 cursor-pointer" onclick="window.open('https://www.youtube.com/watch?v=@(item.Id)', '_blank', 'noopener,noreferrer')">
+                                                    <img id="image" src="@embed.ThumbnailUrl" alt="Placeholder image" referrerpolicy="no-referrer">
+                                                </figure>
+                                                <div class="song-info">
+                                                    <p class="title is-5">@embed.Title</p>
+                                                    <a href="@embed.AuthorUrl" class="subtitle is-6">@embed.AuthorName</a>
+                                                </div>
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        <p class="title is-4"><a href="https://twitch.tv/@(item.Requester)" target="_blank" rel="noreferrer">@item.Requester</a></p>
+                                        <time class="subtitle is-6" datetime="@item.RequestedAt.ToString("yyyy-MM-ddTHH:mm:ss")">@item.RequestedAt.ToString("f")</time>
+                                        @if (!string.IsNullOrWhiteSpace(item.Message))
+                                        {
+                                            <blockquote class="is-size-6 mt-4">@item.Message</blockquote>
+                                        }
+                                        else
+                                        {
+                                            <blockquote class="is-size-6 mt-4">No message</blockquote>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="is-flex is-flex-direction-column pt-3 action-buttons">
+                                            <button class="button is-info is-radiusless" @onclick="() => MoveItemToTop(item)">
+                                        <span class="icon is-small">
+                                            <i class="mat-icon">vertical_align_top</i>
+                                        </span>
+                                            </button>
+                                            <button class="button is-success is-radiusless" @onclick="() => MoveItemUp(item)">
+                                        <span class="icon is-small">
+                                            <i class="mat-icon">keyboard_arrow_up</i>
+                                        </span>
+                                            </button>
+                                            <button class="button is-danger is-radiusless" @onclick="() => RemoveItem(item)">
+                                        <span class="icon is-small">
+                                            <i class="mat-icon">delete</i>
+                                        </span>
+                                            </button>
+                                            <button class="button is-success is-radiusless" @onclick="() => MoveItemDown(item)">
+                                        <span class="icon is-small">
+                                            <i class="mat-icon">keyboard_arrow_down</i>
+                                        </span>
+                                            </button>
+                                            <button class="button is-info is-radiusless" @onclick="() => MoveItemToBottom(item)">
+                                        <span class="icon is-small">
+                                            <i class="mat-icon">vertical_align_bottom</i>
+                                        </span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No items in the queue.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </TabPage>
+</TabControl>

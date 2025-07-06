@@ -1,0 +1,224 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.panel {
+  --bulma-panel-margin: var(--bulma-block-spacing);
+  --bulma-panel-item-border: 1px solid var(--bulma-border-weak);
+  --bulma-panel-radius: var(--bulma-radius-large);
+  --bulma-panel-shadow: var(--bulma-shadow);
+  --bulma-panel-heading-line-height: 1.25;
+  --bulma-panel-heading-padding: 1em 1.25em;
+  --bulma-panel-heading-radius: var(--bulma-radius);
+  --bulma-panel-heading-size: 1.25em;
+  --bulma-panel-heading-weight: var(--bulma-weight-bold);
+  --bulma-panel-tabs-font-size: 1em;
+  --bulma-panel-tab-border-bottom-color: var(--bulma-border);
+  --bulma-panel-tab-border-bottom-style: solid;
+  --bulma-panel-tab-border-bottom-width: 1px;
+  --bulma-panel-tab-active-color: var(--bulma-link-active);
+  --bulma-panel-list-item-color: var(--bulma-text);
+  --bulma-panel-list-item-hover-color: var(--bulma-link);
+  --bulma-panel-block-color: var(--bulma-text-strong);
+  --bulma-panel-block-hover-background-color: var(--bulma-background);
+  --bulma-panel-block-active-border-left-color: var(--bulma-link);
+  --bulma-panel-block-active-color: var(--bulma-link-active);
+  --bulma-panel-block-active-icon-color: var(--bulma-link);
+  --bulma-panel-icon-color: var(--bulma-text-weak);
+}
+
+.panel {
+  --bulma-panel-h: var(--bulma-scheme-h);
+  --bulma-panel-s: var(--bulma-scheme-s);
+  --bulma-panel-color-l: var(--bulma-text-l);
+  --bulma-panel-heading-background-l: var(--bulma-text-l);
+  --bulma-panel-heading-color-l: var(--bulma-text-invert-l);
+  border-radius: var(--bulma-panel-radius);
+  box-shadow: var(--bulma-panel-shadow);
+  font-size: var(--bulma-size-normal);
+}
+.panel:not(:last-child) {
+  margin-bottom: var(--bulma-panel-margin);
+}
+.panel.is-white {
+  --bulma-panel-h: var(--bulma-white-h);
+  --bulma-panel-s: var(--bulma-white-s);
+  --bulma-panel-color-l: var(--bulma-white-l);
+  --bulma-panel-heading-background-l: var(--bulma-white-l);
+  --bulma-panel-heading-color-l: var(--bulma-white-invert-l);
+}
+.panel.is-black {
+  --bulma-panel-h: var(--bulma-black-h);
+  --bulma-panel-s: var(--bulma-black-s);
+  --bulma-panel-color-l: var(--bulma-black-l);
+  --bulma-panel-heading-background-l: var(--bulma-black-l);
+  --bulma-panel-heading-color-l: var(--bulma-black-invert-l);
+}
+.panel.is-light {
+  --bulma-panel-h: var(--bulma-light-h);
+  --bulma-panel-s: var(--bulma-light-s);
+  --bulma-panel-color-l: var(--bulma-light-l);
+  --bulma-panel-heading-background-l: var(--bulma-light-l);
+  --bulma-panel-heading-color-l: var(--bulma-light-invert-l);
+}
+.panel.is-dark {
+  --bulma-panel-h: var(--bulma-dark-h);
+  --bulma-panel-s: var(--bulma-dark-s);
+  --bulma-panel-color-l: var(--bulma-dark-l);
+  --bulma-panel-heading-background-l: var(--bulma-dark-l);
+  --bulma-panel-heading-color-l: var(--bulma-dark-invert-l);
+}
+.panel.is-text {
+  --bulma-panel-h: var(--bulma-text-h);
+  --bulma-panel-s: var(--bulma-text-s);
+  --bulma-panel-color-l: var(--bulma-text-l);
+  --bulma-panel-heading-background-l: var(--bulma-text-l);
+  --bulma-panel-heading-color-l: var(--bulma-text-invert-l);
+}
+.panel.is-primary {
+  --bulma-panel-h: var(--bulma-primary-h);
+  --bulma-panel-s: var(--bulma-primary-s);
+  --bulma-panel-color-l: var(--bulma-primary-l);
+  --bulma-panel-heading-background-l: var(--bulma-primary-l);
+  --bulma-panel-heading-color-l: var(--bulma-primary-invert-l);
+}
+.panel.is-link {
+  --bulma-panel-h: var(--bulma-link-h);
+  --bulma-panel-s: var(--bulma-link-s);
+  --bulma-panel-color-l: var(--bulma-link-l);
+  --bulma-panel-heading-background-l: var(--bulma-link-l);
+  --bulma-panel-heading-color-l: var(--bulma-link-invert-l);
+}
+.panel.is-info {
+  --bulma-panel-h: var(--bulma-info-h);
+  --bulma-panel-s: var(--bulma-info-s);
+  --bulma-panel-color-l: var(--bulma-info-l);
+  --bulma-panel-heading-background-l: var(--bulma-info-l);
+  --bulma-panel-heading-color-l: var(--bulma-info-invert-l);
+}
+.panel.is-success {
+  --bulma-panel-h: var(--bulma-success-h);
+  --bulma-panel-s: var(--bulma-success-s);
+  --bulma-panel-color-l: var(--bulma-success-l);
+  --bulma-panel-heading-background-l: var(--bulma-success-l);
+  --bulma-panel-heading-color-l: var(--bulma-success-invert-l);
+}
+.panel.is-warning {
+  --bulma-panel-h: var(--bulma-warning-h);
+  --bulma-panel-s: var(--bulma-warning-s);
+  --bulma-panel-color-l: var(--bulma-warning-l);
+  --bulma-panel-heading-background-l: var(--bulma-warning-l);
+  --bulma-panel-heading-color-l: var(--bulma-warning-invert-l);
+}
+.panel.is-danger {
+  --bulma-panel-h: var(--bulma-danger-h);
+  --bulma-panel-s: var(--bulma-danger-s);
+  --bulma-panel-color-l: var(--bulma-danger-l);
+  --bulma-panel-heading-background-l: var(--bulma-danger-l);
+  --bulma-panel-heading-color-l: var(--bulma-danger-invert-l);
+}
+
+.panel-tabs:not(:last-child),
+.panel-block:not(:last-child) {
+  border-bottom: var(--bulma-panel-item-border);
+}
+
+.panel-heading {
+  background-color: hsl(var(--bulma-panel-h), var(--bulma-panel-s), var(--bulma-panel-heading-background-l));
+  border-radius: var(--bulma-panel-radius) var(--bulma-panel-radius) 0 0;
+  color: hsl(var(--bulma-panel-h), var(--bulma-panel-s), var(--bulma-panel-heading-color-l));
+  font-size: var(--bulma-panel-heading-size);
+  font-weight: var(--bulma-panel-heading-weight);
+  line-height: var(--bulma-panel-heading-line-height);
+  padding: var(--bulma-panel-heading-padding);
+}
+
+.panel-tabs {
+  align-items: flex-end;
+  display: flex;
+  font-size: var(--bulma-panel-tabs-font-size);
+  justify-content: center;
+}
+.panel-tabs a {
+  border-bottom-color: var(--bulma-panel-tab-border-bottom-color);
+  border-bottom-style: var(--bulma-panel-tab-border-bottom-style);
+  border-bottom-width: var(--bulma-panel-tab-border-bottom-width);
+  margin-bottom: calc(-1 * 1px);
+  padding: 0.75em;
+}
+.panel-tabs a.is-active {
+  border-bottom-color: hsl(var(--bulma-panel-h), var(--bulma-panel-s), var(--bulma-panel-color-l));
+  color: var(--bulma-panel-tab-active-color);
+}
+
+.panel-list a {
+  color: var(--bulma-panel-list-item-color);
+}
+.panel-list a:hover {
+  color: var(--bulma-panel-list-item-hover-color);
+}
+
+.panel-block {
+  align-items: center;
+  color: var(--bulma-panel-block-color);
+  display: flex;
+  justify-content: flex-start;
+  padding: 0.75em 1em;
+}
+.panel-block input[type=checkbox] {
+  margin-inline-end: 0.75em;
+}
+.panel-block > .control {
+  flex-grow: 1;
+  flex-shrink: 1;
+  width: 100%;
+}
+.panel-block.is-wrapped {
+  flex-wrap: wrap;
+}
+.panel-block.is-active {
+  border-left-color: var(--bulma-panel-block-active-border-left-color);
+  color: var(--bulma-panel-block-active-color);
+}
+.panel-block.is-active .panel-icon {
+  color: hsl(var(--bulma-panel-h), var(--bulma-panel-s), var(--bulma-panel-color-l));
+}
+.panel-block:last-child {
+  border-end-start-radius: var(--bulma-panel-radius);
+  border-end-end-radius: var(--bulma-panel-radius);
+}
+
+a.panel-block,
+label.panel-block {
+  cursor: pointer;
+}
+a.panel-block:hover,
+label.panel-block:hover {
+  background-color: var(--bulma-panel-block-hover-background-color);
+}
+
+.panel-icon {
+  display: inline-block;
+  font-size: 1em;
+  height: 1em;
+  line-height: 1em;
+  text-align: center;
+  vertical-align: top;
+  width: 1em;
+  color: var(--bulma-panel-icon-color);
+  margin-inline-end: 0.75em;
+}
+.panel-icon .fa {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/*# sourceMappingURL=panel.css.map */

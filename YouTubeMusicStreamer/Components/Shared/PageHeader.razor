@@ -1,0 +1,25 @@
+﻿@using YouTubeMusicStreamer.Enums
+<h3>@Title</h3>
+@if (!string.IsNullOrWhiteSpace(SubTitle))
+{
+    <p>@SubTitle</p>
+}
+
+@switch (Separator)
+{
+    case Separator.HorizontalRule:
+        <hr/>
+        break;
+    case Separator.None:
+        break;
+    case Separator.Margin:
+    default:
+        <div class="mb-4"></div>
+        break;
+}
+
+@code {
+    [Parameter] public required string Title { get; set; }
+    [Parameter] public string? SubTitle { get; set; }
+    [Parameter] public Separator Separator { get; set; } = Separator.Margin;
+}

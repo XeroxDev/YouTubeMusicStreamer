@@ -1,0 +1,72 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.control,
+.input,
+.textarea,
+.select {
+  --bulma-input-h: var(--bulma-scheme-h);
+  --bulma-input-s: var(--bulma-scheme-s);
+  --bulma-input-l: var(--bulma-scheme-main-l);
+  --bulma-input-border-style: solid;
+  --bulma-input-border-width: var(--bulma-control-border-width);
+  --bulma-input-border-l: var(--bulma-border-l);
+  --bulma-input-border-l-delta: 0%;
+  --bulma-input-hover-border-l-delta: var(--bulma-hover-border-l-delta);
+  --bulma-input-active-border-l-delta: var(--bulma-active-border-l-delta);
+  --bulma-input-focus-h: var(--bulma-focus-h);
+  --bulma-input-focus-s: var(--bulma-focus-s);
+  --bulma-input-focus-l: var(--bulma-focus-l);
+  --bulma-input-focus-shadow-size: var(--bulma-focus-shadow-size);
+  --bulma-input-focus-shadow-alpha: var(--bulma-focus-shadow-alpha);
+  --bulma-input-color-l: var(--bulma-text-strong-l);
+  --bulma-input-background-l: var(--bulma-scheme-main-l);
+  --bulma-input-background-l-delta: 0%;
+  --bulma-input-height: var(--bulma-control-height);
+  --bulma-input-shadow: inset 0 0.0625em 0.125em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.05);
+  --bulma-input-placeholder-color: hsla(var(--bulma-text-h), var(--bulma-text-s), var(--bulma-text-strong-l), 0.3);
+  --bulma-input-disabled-color: var(--bulma-text-weak);
+  --bulma-input-disabled-background-color: var(--bulma-background);
+  --bulma-input-disabled-border-color: var(--bulma-background);
+  --bulma-input-disabled-placeholder-color: hsla(var(--bulma-text-h), var(--bulma-text-s), var(--bulma-text-weak-l), 0.3);
+  --bulma-input-arrow: var(--bulma-link);
+  --bulma-input-icon-color: var(--bulma-text-light);
+  --bulma-input-icon-hover-color: var(--bulma-text-weak);
+  --bulma-input-icon-focus-color: var(--bulma-link);
+  --bulma-input-radius: var(--bulma-radius);
+}
+
+.radio, .checkbox {
+  cursor: pointer;
+  display: inline-block;
+  line-height: 1.25;
+  position: relative;
+}
+.radio input, .checkbox input {
+  cursor: pointer;
+}
+[disabled].radio, [disabled].checkbox, fieldset[disabled] .radio, fieldset[disabled] .checkbox,
+.radio input[disabled],
+.checkbox input[disabled] {
+  color: var(--bulma-text-weak);
+  cursor: not-allowed;
+}
+
+.checkboxes,
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1em;
+  row-gap: 0.5em;
+}
+
+/*# sourceMappingURL=checkbox-radio.css.map */

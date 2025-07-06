@@ -1,0 +1,131 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.title:not(:last-child),
+.subtitle:not(:last-child) {
+  margin-bottom: var(--bulma-block-spacing);
+}
+
+.title,
+.subtitle {
+  --bulma-title-color: var(--bulma-text-strong);
+  --bulma-title-family: false;
+  --bulma-title-size: var(--bulma-size-3);
+  --bulma-title-weight: var(--bulma-weight-extrabold);
+  --bulma-title-line-height: 1.125;
+  --bulma-title-strong-color: inherit;
+  --bulma-title-strong-weight: inherit;
+  --bulma-title-sub-size: 0.75em;
+  --bulma-title-sup-size: 0.75em;
+  --bulma-subtitle-color: var(--bulma-text);
+  --bulma-subtitle-family: false;
+  --bulma-subtitle-size: var(--bulma-size-5);
+  --bulma-subtitle-weight: var(--bulma-weight-normal);
+  --bulma-subtitle-line-height: 1.25;
+  --bulma-subtitle-strong-color: var(--bulma-text-strong);
+  --bulma-subtitle-strong-weight: var(--bulma-weight-semibold);
+}
+
+.title,
+.subtitle {
+  word-break: break-word;
+}
+.title em,
+.title span,
+.subtitle em,
+.subtitle span {
+  font-weight: inherit;
+}
+.title sub,
+.subtitle sub {
+  font-size: var(--bulma-title-sub-size);
+}
+.title sup,
+.subtitle sup {
+  font-size: var(--bulma-title-sup-size);
+}
+.title .tag,
+.subtitle .tag {
+  vertical-align: middle;
+}
+
+.title {
+  color: var(--bulma-title-color);
+  font-size: var(--bulma-title-size);
+  font-weight: var(--bulma-title-weight);
+  line-height: var(--bulma-title-line-height);
+}
+.title strong {
+  color: var(--bulma-title-strong-color);
+  font-weight: var(--bulma-title-strong-weight);
+}
+.title:not(.is-spaced):has(+ .subtitle) {
+  margin-bottom: 0;
+}
+.title.is-1 {
+  font-size: 3rem;
+}
+.title.is-2 {
+  font-size: 2.5rem;
+}
+.title.is-3 {
+  font-size: 2rem;
+}
+.title.is-4 {
+  font-size: 1.5rem;
+}
+.title.is-5 {
+  font-size: 1.25rem;
+}
+.title.is-6 {
+  font-size: 1rem;
+}
+.title.is-7 {
+  font-size: 0.75rem;
+}
+
+.subtitle {
+  color: var(--bulma-subtitle-color);
+  font-size: var(--bulma-subtitle-size);
+  font-weight: var(--bulma-subtitle-weight);
+  line-height: var(--bulma-subtitle-line-height);
+}
+.subtitle strong {
+  color: var(--bulma-subtitle-strong-color);
+  font-weight: var(--bulma-subtitle-strong-weight);
+}
+.subtitle:not(.is-spaced):has(+ .title) {
+  margin-bottom: 0;
+}
+.subtitle.is-1 {
+  font-size: 3rem;
+}
+.subtitle.is-2 {
+  font-size: 2.5rem;
+}
+.subtitle.is-3 {
+  font-size: 2rem;
+}
+.subtitle.is-4 {
+  font-size: 1.5rem;
+}
+.subtitle.is-5 {
+  font-size: 1.25rem;
+}
+.subtitle.is-6 {
+  font-size: 1rem;
+}
+.subtitle.is-7 {
+  font-size: 0.75rem;
+}
+
+/*# sourceMappingURL=title.css.map */

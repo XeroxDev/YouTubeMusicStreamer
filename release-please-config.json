@@ -1,0 +1,17 @@
+{
+  "packages": {
+    ".": {
+      "package-name": "YouTubeMusicStreamer",
+      "component": "YouTubeMusicStreamer",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "simple",
+      "draft": true,
+      "prerelease": false,
+      "include-component-in-tag": false,
+      "extra-files": [
+        "YouTubeMusicStreamer/YouTubeMusicStreamer.csproj"
+      ]
+    }
+  },
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}

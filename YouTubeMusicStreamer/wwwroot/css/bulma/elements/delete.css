@@ -1,0 +1,60 @@
+.delete {
+  --bulma-delete-dimensions: 1.25rem;
+  --bulma-delete-background-l: 0%;
+  --bulma-delete-background-alpha: 0.5;
+  --bulma-delete-color: var(--bulma-white);
+  appearance: none;
+  background-color: hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-delete-background-l), var(--bulma-delete-background-alpha));
+  border: none;
+  border-radius: var(--bulma-radius-rounded);
+  cursor: pointer;
+  pointer-events: auto;
+  display: inline-flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+  font-size: 1em;
+  height: var(--bulma-delete-dimensions);
+  max-height: var(--bulma-delete-dimensions);
+  max-width: var(--bulma-delete-dimensions);
+  min-height: var(--bulma-delete-dimensions);
+  min-width: var(--bulma-delete-dimensions);
+  outline: none;
+  position: relative;
+  vertical-align: top;
+  width: var(--bulma-delete-dimensions);
+}
+.delete::before, .delete::after {
+  background-color: var(--bulma-delete-color);
+  content: "";
+  display: block;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%) rotate(45deg);
+  transform-origin: center center;
+}
+.delete::before {
+  height: 2px;
+  width: 50%;
+}
+.delete::after {
+  height: 50%;
+  width: 2px;
+}
+.delete:hover, .delete:focus {
+  --bulma-delete-background-alpha: 0.4;
+}
+.delete:active {
+  --bulma-delete-background-alpha: 0.5;
+}
+.delete.is-small {
+  --bulma-delete-dimensions: 1rem;
+}
+.delete.is-medium {
+  --bulma-delete-dimensions: 1.5rem;
+}
+.delete.is-large {
+  --bulma-delete-dimensions: 2rem;
+}
+
+/*# sourceMappingURL=delete.css.map */

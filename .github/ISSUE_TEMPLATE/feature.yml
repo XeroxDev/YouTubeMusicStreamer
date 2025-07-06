@@ -1,0 +1,59 @@
+﻿name: Feature request
+description: Template for feature requests
+title: '[Feature]: '
+labels:
+  - 'Type: Enhancement'
+body:
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      description: I agree with the following sentences and know that the ticket can get closed if I'm not truthful with my answers
+      options:
+        - label: I have searched the existing issues and verified that there is no existing issue (open or closed) for the same subject.
+          required: true
+        - label: I understand that YouTube Music Streamer has NO affiliation with Google, YouTube or the YTMDesktop application.
+          required: true
+        - label: I have visited the help desk page and couldn’t find any information on this topic or anything that could help me.
+          required: true
+  - type: textarea
+    id: feature
+    attributes:
+      label: Feature
+      description: | 
+        A concise description of the feature you would like to see implemented.
+        
+        Tip: Add some real-world examples of how this feature would be used, and why it is important to you.
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reasons for the feature
+      description: A concise description of why you think this feature is needed, how it would improve the application and how it would benefit the majority of users.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution
+      description: A concise description of how you think this feature could be implemented. Where should it be located? How should it work? What should it look like? This is not required, but it would be very helpful if you could provide this information.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: A concise description of any alternative solutions or features that you have considered. What are the pros and cons of these alternatives? Why do you think implementing this feature is better than the alternatives?
+    validations:
+      required: false
+  - type: textarea
+    id: other
+    attributes:
+      label: Anything else?
+      description: |
+        Links? References? Anything that will give us more context about the issue you are encountering! 
+        
+        Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+    validations:
+      required: false

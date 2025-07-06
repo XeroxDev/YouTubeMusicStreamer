@@ -1,0 +1,37 @@
+.is-clearfix::after {
+  clear: both;
+  content: " ";
+  display: table;
+}
+
+.is-float-left,
+.is-pulled-left {
+  float: left !important;
+}
+
+.is-float-right,
+.is-pulled-right {
+  float: right !important;
+}
+
+.is-float-none {
+  float: none !important;
+}
+
+.is-clear-both {
+  clear: both !important;
+}
+
+.is-clear-left {
+  clear: left !important;
+}
+
+.is-clear-none {
+  clear: none !important;
+}
+
+.is-clear-right {
+  clear: right !important;
+}
+
+/*# sourceMappingURL=float.css.map */

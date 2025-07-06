@@ -1,0 +1,130 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.card:not(:last-child) {
+  margin-bottom: var(--bulma-block-spacing);
+}
+
+.card {
+  --bulma-card-color: var(--bulma-text);
+  --bulma-card-background-color: var(--bulma-scheme-main);
+  --bulma-card-shadow: var(--bulma-shadow);
+  --bulma-card-radius: 0.75rem;
+  --bulma-card-header-background-color: transparent;
+  --bulma-card-header-color: var(--bulma-text-strong);
+  --bulma-card-header-padding: 0.75rem 1rem;
+  --bulma-card-header-shadow: 0 0.125em 0.25em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.1);
+  --bulma-card-header-weight: var(--bulma-weight-bold);
+  --bulma-card-content-background-color: transparent;
+  --bulma-card-content-padding: 1.5rem;
+  --bulma-card-footer-background-color: transparent;
+  --bulma-card-footer-border-top: 1px solid var(--bulma-border-weak);
+  --bulma-card-footer-padding: 0.75rem;
+  --bulma-card-media-margin: var(--bulma-block-spacing);
+}
+
+.card {
+  background-color: var(--bulma-card-background-color);
+  border-radius: var(--bulma-card-radius);
+  box-shadow: var(--bulma-card-shadow);
+  color: var(--bulma-card-color);
+  max-width: 100%;
+  position: relative;
+}
+
+.card-footer:first-child, .card-content:first-child, .card-header:first-child {
+  border-start-start-radius: var(--bulma-card-radius);
+  border-start-end-radius: var(--bulma-card-radius);
+}
+.card-footer:last-child, .card-content:last-child, .card-header:last-child {
+  border-end-start-radius: var(--bulma-card-radius);
+  border-end-end-radius: var(--bulma-card-radius);
+}
+
+.card-header {
+  background-color: var(--bulma-card-header-background-color);
+  align-items: stretch;
+  box-shadow: var(--bulma-card-header-shadow);
+  display: flex;
+}
+
+.card-header-title {
+  align-items: center;
+  color: var(--bulma-card-header-color);
+  display: flex;
+  flex-grow: 1;
+  font-weight: var(--bulma-card-header-weight);
+  padding: var(--bulma-card-header-padding);
+}
+.card-header-title.is-centered {
+  justify-content: center;
+}
+
+.card-header-icon {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  padding: var(--bulma-card-header-padding);
+}
+
+.card-image {
+  display: block;
+  position: relative;
+}
+.card-image:first-child img {
+  border-start-start-radius: var(--bulma-card-radius);
+  border-start-end-radius: var(--bulma-card-radius);
+}
+.card-image:last-child img {
+  border-end-start-radius: var(--bulma-card-radius);
+  border-end-end-radius: var(--bulma-card-radius);
+}
+
+.card-content {
+  background-color: var(--bulma-card-content-background-color);
+  padding: var(--bulma-card-content-padding);
+}
+
+.card-footer {
+  background-color: var(--bulma-card-footer-background-color);
+  border-top: var(--bulma-card-footer-border-top);
+  align-items: stretch;
+  display: flex;
+}
+
+.card-footer-item {
+  align-items: center;
+  display: flex;
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: var(--bulma-card-footer-padding);
+}
+.card-footer-item:not(:last-child) {
+  border-inline-end: var(--bulma-card-footer-border-top);
+}
+
+.card .media:not(:last-child) {
+  margin-bottom: var(--bulma-card-media-margin);
+}
+
+/*# sourceMappingURL=card.css.map */

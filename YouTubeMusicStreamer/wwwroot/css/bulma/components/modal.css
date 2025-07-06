@@ -1,0 +1,194 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.modal-close {
+  --bulma-delete-dimensions: 1.25rem;
+  --bulma-delete-background-l: 0%;
+  --bulma-delete-background-alpha: 0.5;
+  --bulma-delete-color: var(--bulma-white);
+  appearance: none;
+  background-color: hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-delete-background-l), var(--bulma-delete-background-alpha));
+  border: none;
+  border-radius: var(--bulma-radius-rounded);
+  cursor: pointer;
+  pointer-events: auto;
+  display: inline-flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+  font-size: 1em;
+  height: var(--bulma-delete-dimensions);
+  max-height: var(--bulma-delete-dimensions);
+  max-width: var(--bulma-delete-dimensions);
+  min-height: var(--bulma-delete-dimensions);
+  min-width: var(--bulma-delete-dimensions);
+  outline: none;
+  position: relative;
+  vertical-align: top;
+  width: var(--bulma-delete-dimensions);
+}
+.modal-close::before, .modal-close::after {
+  background-color: var(--bulma-delete-color);
+  content: "";
+  display: block;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%) rotate(45deg);
+  transform-origin: center center;
+}
+.modal-close::before {
+  height: 2px;
+  width: 50%;
+}
+.modal-close::after {
+  height: 50%;
+  width: 2px;
+}
+.modal-close:hover, .modal-close:focus {
+  --bulma-delete-background-alpha: 0.4;
+}
+.modal-close:active {
+  --bulma-delete-background-alpha: 0.5;
+}
+.is-small.modal-close {
+  --bulma-delete-dimensions: 1rem;
+}
+.is-medium.modal-close {
+  --bulma-delete-dimensions: 1.5rem;
+}
+.is-large.modal-close {
+  --bulma-delete-dimensions: 2rem;
+}
+
+.modal, .modal-background {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.modal {
+  --bulma-modal-z: 40;
+  --bulma-modal-background-background-color: hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.86);
+  --bulma-modal-content-width: 40rem;
+  --bulma-modal-content-margin-mobile: 1.25rem;
+  --bulma-modal-content-spacing-mobile: 10rem;
+  --bulma-modal-content-spacing-tablet: 2.5rem;
+  --bulma-modal-close-dimensions: 2.5rem;
+  --bulma-modal-close-right: 1.25rem;
+  --bulma-modal-close-top: 1.25rem;
+  --bulma-modal-card-spacing: 2.5rem;
+  --bulma-modal-card-head-background-color: var(--bulma-scheme-main);
+  --bulma-modal-card-head-padding: 2rem;
+  --bulma-modal-card-head-radius: var(--bulma-radius-large);
+  --bulma-modal-card-title-color: var(--bulma-text-strong);
+  --bulma-modal-card-title-line-height: 1;
+  --bulma-modal-card-title-size: var(--bulma-size-4);
+  --bulma-modal-card-foot-background-color: var(--bulma-scheme-main-bis);
+  --bulma-modal-card-foot-radius: var(--bulma-radius-large);
+  --bulma-modal-card-body-background-color: var(--bulma-scheme-main);
+  --bulma-modal-card-body-padding: 2rem;
+}
+
+.modal {
+  align-items: center;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  position: fixed;
+  z-index: var(--bulma-modal-z);
+}
+.modal.is-active {
+  display: flex;
+}
+
+.modal-background {
+  background-color: var(--bulma-modal-background-background-color);
+}
+
+.modal-content,
+.modal-card {
+  margin: 0 var(--bulma-modal-content-margin-mobile);
+  max-height: calc(100vh - var(--bulma-modal-content-spacing-mobile));
+  overflow: auto;
+  position: relative;
+  width: 100%;
+}
+@media screen and (min-width: 769px) {
+  .modal-content,
+  .modal-card {
+    margin: 0 auto;
+    max-height: calc(100vh - var(--bulma-modal-content-spacing-tablet));
+    width: var(--bulma-modal-content-width);
+  }
+}
+
+.modal-close {
+  background: none;
+  height: var(--bulma-modal-close-dimensions);
+  inset-inline-end: var(--bulma-modal-close-right);
+  position: fixed;
+  top: var(--bulma-modal-close-top);
+  width: var(--bulma-modal-close-dimensions);
+}
+
+.modal-card {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--bulma-modal-card-spacing));
+  overflow: hidden;
+  overflow-y: visible;
+}
+
+.modal-card-head,
+.modal-card-foot {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  padding: var(--bulma-modal-card-head-padding);
+  position: relative;
+}
+
+.modal-card-head {
+  background-color: var(--bulma-modal-card-head-background-color);
+  border-start-start-radius: var(--bulma-modal-card-head-radius);
+  border-start-end-radius: var(--bulma-modal-card-head-radius);
+  box-shadow: var(--bulma-shadow);
+}
+
+.modal-card-title {
+  color: var(--bulma-modal-card-title-color);
+  flex-grow: 1;
+  flex-shrink: 0;
+  font-size: var(--bulma-modal-card-title-size);
+  line-height: var(--bulma-modal-card-title-line-height);
+}
+
+.modal-card-foot {
+  background-color: var(--bulma-modal-card-foot-background-color);
+  border-end-start-radius: var(--bulma-modal-card-foot-radius);
+  border-end-end-radius: var(--bulma-modal-card-foot-radius);
+}
+
+.modal-card-body {
+  -webkit-overflow-scrolling: touch;
+  background-color: var(--bulma-modal-card-body-background-color);
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow: auto;
+  padding: var(--bulma-modal-card-body-padding);
+}
+
+/*# sourceMappingURL=modal.css.map */

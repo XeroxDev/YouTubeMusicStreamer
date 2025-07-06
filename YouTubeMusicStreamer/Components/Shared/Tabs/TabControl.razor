@@ -1,0 +1,43 @@
+﻿<CascadingValue Value="this">
+    <div class="mb-4 tabs @TabsCssClasses">
+        <ul>
+            @foreach (var tabPage in _pages)
+            {
+                <li class="@(tabPage == ActivePage ? "is-active" : "")">
+                    <a @onclick=@(() => ActivatePage(tabPage))>
+                        @if (!string.IsNullOrWhiteSpace(tabPage.Icon))
+                        {
+                            <span class="icon">
+                                <i class="@tabPage.IconCssClass">@tabPage.Icon</i>
+                            </span>
+                        }
+                        <span>@tabPage.Text</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+    @ChildContent
+</CascadingValue>
+
+@code {
+
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public string TabsCssClasses { get; set; } = "is-medium";
+
+    public TabPage? ActivePage { get; private set; }
+    private readonly List<TabPage> _pages = [];
+
+    internal void AddPage(TabPage tabPage)
+    {
+        _pages.Add(tabPage);
+        if (_pages.Count == 1) ActivePage = tabPage;
+        StateHasChanged();
+    }
+
+    void ActivatePage(TabPage page)
+    {
+        ActivePage = page;
+    }
+
+}

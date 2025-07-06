@@ -1,0 +1,72 @@
+﻿<div class="content is-flex is-flex-direction-column is-gap-1">
+    <div class="columns">
+        <div class="field column">
+            <label class="label">Command Status</label>
+            <div class="control is-expanded">
+                <Toggle @bind-Value="Command.CommandSettings.IsEnabled" OffLabel="Disabled" OnLabel="Enabled"/>
+            </div>
+            <p class="help">Whether the command should be enabled or disabled</p>
+        </div>
+        <div class="field column">
+            <label class="label">Trigger</label>
+            <div class="field has-addons">
+                <div class="control">
+                    <a class="button is-static">@(CommandPrefix)</a>
+                </div>
+                <div class="control is-expanded">
+                    <input class="input" type="text" placeholder="Trigger" @bind="Command.CommandSettings.Trigger">
+                </div>
+            </div>
+            <p class="help">The trigger the user has to write into the chat</p>
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="field column">
+            <label class="label">Auto Response</label>
+            <div class="control is-expanded">
+                <input class="input" type="text" placeholder="Response" @bind="Command.CommandSettings.Response">
+            </div>
+            <p class="help">The response that should be sent when the command is triggered. Empty for no response.</p>
+            @foreach (var placeholder in Command.Placeholders)
+            {
+                <p @key="placeholder.Key" class="help"><code>@placeholder.Key</code> - @placeholder.Value</p>
+            }
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="field column">
+            <label class="label">Cooldown</label>
+            <div class="control is-expanded">
+                <input class="input" type="number" placeholder="120" @bind="Command.CommandSettings.Cooldown" min="0">
+            </div>
+            <p class="help">The cooldown in seconds between command usages. 0 for no cooldown.</p>
+        </div>
+
+        <div class="field column">
+            <label class="label">Required Bits</label>
+            <div class="control is-expanded">
+                <input class="input" type="number" placeholder="120" @bind="Command.CommandSettings.RequiredBits" min="0">
+            </div>
+            <p class="help">The required amount of bits to use the command. 0 for no bits required.</p>
+        </div>
+
+        <div class="field column">
+            <label class="label">Twitch Reward</label>
+            <TwitchRewardSelection @bind-Value="Command.CommandSettings.RewardId"></TwitchRewardSelection>
+            <p class="help">The (channel points) reward the user can redeem to execute this command</p>
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="field column">
+            <div class="control">
+                <button class="button is-primary" @onclick="SaveCommandSettings">
+                    <span class="icon is-small"><i class="mat-icon">save</i></span>
+                    <span>Save</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

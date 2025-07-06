@@ -1,0 +1,16 @@
+﻿{
+  "Source": "Styles",
+  "Target": "wwwroot/css",
+  "Arguments": "--style=compressed --error-css",
+  "GenerateScopedCss": true,
+  "ScopedCssFolders": [
+    "Components"
+  ],
+  "IncludePaths": [],
+  "Compilations": [],
+  "Configurations": {
+    "Debug": {
+      "Arguments": "--style=expanded"
+    }
+  }
+}

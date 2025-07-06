@@ -1,0 +1,217 @@
+﻿@page "/about"
+@using YouTubeMusicStreamer.Services.App
+@using YouTubeMusicStreamer.Utils
+<div class="card">
+    <div class="card-content">
+        <div class="is-flex is-gap-2 is-flex-direction-column is-align-items-center is-justify-content-center has-text-centered">
+            <!-- Logo -->
+            <img src="favicon.svg" alt="Logo" width="100" height="100"/>
+
+            <!-- App Title -->
+            <h1 class="title is-2 has-text-primary">@AppUtils.AppName</h1>
+
+            <!-- Info Grid -->
+            <div class="columns is-multiline">
+                <div class="column is-6">
+                    <div class="info-box">
+                        <p class="info-label">Build Time</p>
+                        <p class="info-value">@BuildTime</p>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <div class="info-box">
+                        <p class="info-label">Version</p>
+                        <p class="info-value">@versionService.GetAppVersion()@(versionService.IsPortable ? " (Portable)" : string.Empty)</p>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <div class="info-box">
+                        <p class="info-label">Commit</p>
+                        <p class="info-value">@GeneratedBuildInfo.GitCommit</p>
+                    </div>
+                </div>
+                <div class="column is-6 is-flex is-flex-direction-column is-gap-1">
+                    <div class="info-box">
+                        <p class="info-label">Updates</p>
+                        <p class="info-value update-tag update-@versionService.Status.ToString().ToLowerInvariant()">
+                            @if (versionService.SpinnerVisible)
+                            {
+                                <span class="update-spinner"></span>
+                            }
+                            @versionService.StatusText
+                        </p>
+                    </div>
+
+                    @if (versionService.IsInstalled)
+                    {
+                        <button
+                            class="button is-small @(versionService.Status switch
+                                                   {
+                                                       VersionService.UpdateStatus.Available => "is-primary",
+                                                       VersionService.UpdateStatus.PendingRestart => "is-success",
+                                                       _ => "is-info"
+                                                   }) update-button"
+                            @onclick="versionService.ButtonCallback"
+                            disabled="@versionService.ButtonDisabled">
+                            @versionService.ButtonText
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="buttons is-centered">
+                <a href="https://x.xeroxdev.de/s/discord" class="button" target="_blank">
+                <span class="icon is-small">
+                    <i class="brand-icon">discord</i>
+                </span>
+                    <span>Discord</span>
+                </a>
+
+                <a href="https://github.com/XeroxDev/YouTubeMusicStreamer" class="button" target="_blank">
+                    <span class="icon is-small">
+                        <i class="brand-icon">GitHub</i>
+                    </span>
+                    <span>GitHub</span>
+                </a>
+            </div>
+
+            <p class="is-size-6 is-flex is-align-items-center is-justify-content-center is-gap-0.5">
+                <span>Made with</span>
+                <span class="icon has-text-primary heart"><i class="mat-icon hover-fill">favorite</i></span>
+                <span>by <a href="https://xeroxdev.de" target="_blank" class="has-text-link">XeroxDev</a></span>
+            </p>
+        </div>
+    </div>
+</div>
+
+@if (versionService.Status is VersionService.UpdateStatus.Available or VersionService.UpdateStatus.PendingRestart && versionService.UpdateVersion is not null)
+{
+    <div class="card mt-4">
+        <header class="card-header cursor-pointer" data-collapsible="changelog">
+            <h2 class="card-header-title is-flex is-gap-1 is-size-4"><i class="mat-icon">history</i> Release notes</h2>
+            <button class="card-header-icon" aria-label="show/hide">
+                <span class="icon collapsible closed" data-collapse-changelog="closed">
+                    <i class="mat-icon">keyboard_arrow_down</i>
+                </span>
+            </button>
+        </header>
+        <div class="card-content collapsible closed" data-collapse-changelog="closed">
+            <div class="content">
+                @((MarkupString)versionService.UpdateVersion.NotesHTML)
+            </div>
+        </div>
+    </div>
+}
+
+<div class="columns is-gap-1 mt-4">
+    <div class="column">
+        <div class="card">
+            <header class="card-header cursor-pointer" data-collapsible="license">
+                <h2 class="card-header-title is-flex is-gap-1 is-size-4"><i class="mat-icon">copyright</i> License</h2>
+                <button class="card-header-icon" aria-label="show/hide">
+                                <span class="icon collapsible closed" data-collapse-license="closed">
+                                    <i class="mat-icon">keyboard_arrow_down</i>
+                                </span>
+                </button>
+            </header>
+            <div class="card-content collapsible closed" data-collapse-license="closed">
+                <div class="content" style="white-space: pre-wrap; font-family: monospace;">
+                    @if (string.IsNullOrWhiteSpace(_licenseContent))
+                    {
+                        <p class="has-text-centered">Loading license...</p>
+                    }
+                    else
+                    {
+                        @(_licenseContent)
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column">
+        <div class="card">
+            <header class="card-header cursor-pointer" data-collapsible="additional-permissions">
+                <h2 class="card-header-title is-flex is-gap-1 is-size-4"><i class="mat-icon">copyright</i> Additional Permissions</h2>
+                <button class="card-header-icon" aria-label="show/hide">
+                                <span class="icon collapsible closed" data-collapse-additional-permissions="closed">
+                                    <i class="mat-icon">keyboard_arrow_down</i>
+                                </span>
+                </button>
+            </header>
+            <div class="card-content collapsible closed" data-collapse-additional-permissions="closed">
+                <div class="content" style="white-space: pre-wrap; font-family: monospace;">
+                    @if (string.IsNullOrWhiteSpace(_additionalPermissionsContent))
+                    {
+                        <p class="has-text-centered">Loading additional permissions...</p>
+                    }
+                    else
+                    {
+                        @(_additionalPermissionsContent)
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+  <header class="card-header cursor-pointer" data-collapsible="third-party-licenses">
+    <h2 class="card-header-title is-flex is-gap-1 is-size-4">
+      <i class="mat-icon">copyright</i>
+      Third-Party Licenses
+    </h2>
+    <button class="card-header-icon" aria-label="show/hide">
+      <span class="icon collapsible closed" data-collapse-third-party-licenses="closed">
+        <i class="mat-icon">keyboard_arrow_down</i>
+      </span>
+    </button>
+  </header>
+
+  <div class="card-content collapsible closed" data-collapse-third-party-licenses="closed">
+    <div class="content">
+      @if (_thirdPartyLicenses.Count == 0)
+      {
+        <p class="has-text-centered">Loading third-party licenses…</p>
+      }
+      else
+      {
+          @foreach (var license in _thirdPartyLicenses)
+          {
+              <div class="license-item">
+                  <div class="media is-align-items-center">
+                      <div class="media-content">
+                          <p class="title is-5 mb-1">
+                              <a href="@(license.PackageProjectUrl ?? $"https://www.nuget.org/packages/{license.PackageId}")"
+                                 target="_blank"
+                                 rel="nofollow noopener"
+                                 class="has-text-info">
+                                  @license.PackageId
+                              </a>
+                          </p>
+                      </div>
+                      <div class="media-right is-align-items-center">
+                          <span class="tag is-info is-light mr-2">v@(license.PackageVersion)</span>
+                          <a class="tag is-danger is-light" 
+                             href="@license.LicenseUrl" 
+                             target="_blank" rel="nofollow noopener">
+                              @(license.License ?? "Unknown")
+                          </a>
+                      </div>
+                  </div>
+
+                  <div class="content mt-3">
+                      <p class="mb-2">
+                          <strong>Copyright:</strong>
+                          @(license.Copyright ?? "No copyright information available.")
+                      </p>
+                      <p>
+                          Authors: @(string.Join(", ", (license.Authors ?? "No authors specified.").Split(',').Select(a => a.Trim())))
+                      </p>
+                  </div>
+              </div>
+          }
+      }
+    </div>
+  </div>
+</div>

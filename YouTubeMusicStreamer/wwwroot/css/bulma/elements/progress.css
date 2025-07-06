@@ -1,0 +1,119 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.progress:not(:last-child) {
+  margin-bottom: var(--bulma-block-spacing);
+}
+
+.progress {
+  --bulma-progress-border-radius: var(--bulma-radius-rounded);
+  --bulma-progress-bar-background-color: var(--bulma-border-weak);
+  --bulma-progress-value-background-color: var(--bulma-text);
+  --bulma-progress-indeterminate-duration: 1.5s;
+}
+
+.progress {
+  appearance: none;
+  border: none;
+  border-radius: var(--bulma-progress-border-radius);
+  display: block;
+  height: var(--bulma-size-normal);
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+}
+.progress::-webkit-progress-bar {
+  background-color: var(--bulma-progress-bar-background-color);
+}
+.progress::-webkit-progress-value {
+  background-color: var(--bulma-progress-value-background-color);
+}
+.progress::-moz-progress-bar {
+  background-color: var(--bulma-progress-value-background-color);
+}
+.progress::-ms-fill {
+  background-color: var(--bulma-progress-value-background-color);
+  border: none;
+}
+.progress.is-white {
+  --bulma-progress-value-background-color: var(--bulma-white);
+}
+.progress.is-black {
+  --bulma-progress-value-background-color: var(--bulma-black);
+}
+.progress.is-light {
+  --bulma-progress-value-background-color: var(--bulma-light);
+}
+.progress.is-dark {
+  --bulma-progress-value-background-color: var(--bulma-dark);
+}
+.progress.is-text {
+  --bulma-progress-value-background-color: var(--bulma-text);
+}
+.progress.is-primary {
+  --bulma-progress-value-background-color: var(--bulma-primary);
+}
+.progress.is-link {
+  --bulma-progress-value-background-color: var(--bulma-link);
+}
+.progress.is-info {
+  --bulma-progress-value-background-color: var(--bulma-info);
+}
+.progress.is-success {
+  --bulma-progress-value-background-color: var(--bulma-success);
+}
+.progress.is-warning {
+  --bulma-progress-value-background-color: var(--bulma-warning);
+}
+.progress.is-danger {
+  --bulma-progress-value-background-color: var(--bulma-danger);
+}
+.progress:indeterminate {
+  animation-duration: var(--bulma-progress-indeterminate-duration);
+  animation-iteration-count: infinite;
+  animation-name: moveIndeterminate;
+  animation-timing-function: linear;
+  background-color: var(--bulma-progress-bar-background-color);
+  background-image: linear-gradient(to right, var(--bulma-progress-value-background-color) 30%, var(--bulma-progress-bar-background-color) 30%);
+  background-position: top left;
+  background-repeat: no-repeat;
+  background-size: 150% 150%;
+}
+.progress:indeterminate::-webkit-progress-bar {
+  background-color: transparent;
+}
+.progress:indeterminate::-moz-progress-bar {
+  background-color: transparent;
+}
+.progress:indeterminate::-ms-fill {
+  animation-name: none;
+}
+.progress.is-small {
+  height: var(--bulma-size-small);
+}
+.progress.is-medium {
+  height: var(--bulma-size-medium);
+}
+.progress.is-large {
+  height: var(--bulma-size-large);
+}
+
+@keyframes moveIndeterminate {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/*# sourceMappingURL=progress.css.map */

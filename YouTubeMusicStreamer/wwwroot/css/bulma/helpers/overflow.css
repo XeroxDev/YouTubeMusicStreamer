@@ -1,0 +1,65 @@
+.is-clipped {
+  overflow: hidden !important;
+}
+
+.is-overflow-auto {
+  overflow: auto !important;
+}
+
+.is-overflow-x-auto {
+  overflow-x: auto !important;
+}
+
+.is-overflow-y-auto {
+  overflow-y: auto !important;
+}
+
+.is-overflow-clip {
+  overflow: clip !important;
+}
+
+.is-overflow-x-clip {
+  overflow-x: clip !important;
+}
+
+.is-overflow-y-clip {
+  overflow-y: clip !important;
+}
+
+.is-overflow-hidden {
+  overflow: hidden !important;
+}
+
+.is-overflow-x-hidden {
+  overflow-x: hidden !important;
+}
+
+.is-overflow-y-hidden {
+  overflow-y: hidden !important;
+}
+
+.is-overflow-scroll {
+  overflow: scroll !important;
+}
+
+.is-overflow-x-scroll {
+  overflow-x: scroll !important;
+}
+
+.is-overflow-y-scroll {
+  overflow-y: scroll !important;
+}
+
+.is-overflow-visible {
+  overflow: visible !important;
+}
+
+.is-overflow-x-visible {
+  overflow-x: visible !important;
+}
+
+.is-overflow-y-visible {
+  overflow-y: visible !important;
+}
+
+/*# sourceMappingURL=overflow.css.map */

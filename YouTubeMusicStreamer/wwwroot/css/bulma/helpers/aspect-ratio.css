@@ -1,0 +1,61 @@
+.is-aspect-ratio-1by1 {
+  aspect-ratio: 1/1;
+}
+
+.is-aspect-ratio-5by4 {
+  aspect-ratio: 5/4;
+}
+
+.is-aspect-ratio-4by3 {
+  aspect-ratio: 4/3;
+}
+
+.is-aspect-ratio-3by2 {
+  aspect-ratio: 3/2;
+}
+
+.is-aspect-ratio-5by3 {
+  aspect-ratio: 5/3;
+}
+
+.is-aspect-ratio-16by9 {
+  aspect-ratio: 16/9;
+}
+
+.is-aspect-ratio-2by1 {
+  aspect-ratio: 2/1;
+}
+
+.is-aspect-ratio-3by1 {
+  aspect-ratio: 3/1;
+}
+
+.is-aspect-ratio-4by5 {
+  aspect-ratio: 4/5;
+}
+
+.is-aspect-ratio-3by4 {
+  aspect-ratio: 3/4;
+}
+
+.is-aspect-ratio-2by3 {
+  aspect-ratio: 2/3;
+}
+
+.is-aspect-ratio-3by5 {
+  aspect-ratio: 3/5;
+}
+
+.is-aspect-ratio-9by16 {
+  aspect-ratio: 9/16;
+}
+
+.is-aspect-ratio-1by2 {
+  aspect-ratio: 1/2;
+}
+
+.is-aspect-ratio-1by3 {
+  aspect-ratio: 1/3;
+}
+
+/*# sourceMappingURL=aspect-ratio.css.map */

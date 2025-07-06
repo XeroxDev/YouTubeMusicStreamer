@@ -1,0 +1,9 @@
+﻿.song-cell {
+    position: relative;
+    
+    .song-info {
+        position: absolute;
+        top: 0.75rem;
+        left: 1.25rem;
+    }
+}

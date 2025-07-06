@@ -1,0 +1,284 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.input, .textarea {
+  align-items: center;
+  appearance: none;
+  border-color: transparent;
+  border-style: solid;
+  border-width: var(--bulma-control-border-width);
+  border-radius: var(--bulma-control-radius);
+  box-shadow: none;
+  display: inline-flex;
+  font-size: var(--bulma-control-size);
+  height: var(--bulma-control-height);
+  justify-content: flex-start;
+  line-height: var(--bulma-control-line-height);
+  padding-bottom: var(--bulma-control-padding-vertical);
+  padding-left: var(--bulma-control-padding-horizontal);
+  padding-right: var(--bulma-control-padding-horizontal);
+  padding-top: var(--bulma-control-padding-vertical);
+  position: relative;
+  transition-duration: var(--bulma-duration);
+  transition-property: background-color, border-color, box-shadow, color;
+  vertical-align: top;
+}
+.input:focus, .textarea:focus, .input:focus-visible, .textarea:focus-visible, .input:focus-within, .textarea:focus-within, .is-focused.input, .is-focused.textarea, .input:active, .textarea:active, .is-active.input, .is-active.textarea {
+  outline: none;
+}
+[disabled].input, [disabled].textarea, fieldset[disabled] .input, fieldset[disabled] .textarea {
+  cursor: not-allowed;
+}
+
+.control,
+.input,
+.textarea,
+.select {
+  --bulma-input-h: var(--bulma-scheme-h);
+  --bulma-input-s: var(--bulma-scheme-s);
+  --bulma-input-l: var(--bulma-scheme-main-l);
+  --bulma-input-border-style: solid;
+  --bulma-input-border-width: var(--bulma-control-border-width);
+  --bulma-input-border-l: var(--bulma-border-l);
+  --bulma-input-border-l-delta: 0%;
+  --bulma-input-hover-border-l-delta: var(--bulma-hover-border-l-delta);
+  --bulma-input-active-border-l-delta: var(--bulma-active-border-l-delta);
+  --bulma-input-focus-h: var(--bulma-focus-h);
+  --bulma-input-focus-s: var(--bulma-focus-s);
+  --bulma-input-focus-l: var(--bulma-focus-l);
+  --bulma-input-focus-shadow-size: var(--bulma-focus-shadow-size);
+  --bulma-input-focus-shadow-alpha: var(--bulma-focus-shadow-alpha);
+  --bulma-input-color-l: var(--bulma-text-strong-l);
+  --bulma-input-background-l: var(--bulma-scheme-main-l);
+  --bulma-input-background-l-delta: 0%;
+  --bulma-input-height: var(--bulma-control-height);
+  --bulma-input-shadow: inset 0 0.0625em 0.125em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.05);
+  --bulma-input-placeholder-color: hsla(var(--bulma-text-h), var(--bulma-text-s), var(--bulma-text-strong-l), 0.3);
+  --bulma-input-disabled-color: var(--bulma-text-weak);
+  --bulma-input-disabled-background-color: var(--bulma-background);
+  --bulma-input-disabled-border-color: var(--bulma-background);
+  --bulma-input-disabled-placeholder-color: hsla(var(--bulma-text-h), var(--bulma-text-s), var(--bulma-text-weak-l), 0.3);
+  --bulma-input-arrow: var(--bulma-link);
+  --bulma-input-icon-color: var(--bulma-text-light);
+  --bulma-input-icon-hover-color: var(--bulma-text-weak);
+  --bulma-input-icon-focus-color: var(--bulma-link);
+  --bulma-input-radius: var(--bulma-radius);
+}
+
+.input, .textarea {
+  background-color: hsl(var(--bulma-input-h), var(--bulma-input-s), calc(var(--bulma-input-background-l) + var(--bulma-input-background-l-delta)));
+  border-color: hsl(var(--bulma-input-h), var(--bulma-input-s), calc(var(--bulma-input-border-l) + var(--bulma-input-border-l-delta)));
+  border-radius: var(--bulma-input-radius);
+  color: hsl(var(--bulma-input-h), var(--bulma-input-s), var(--bulma-input-color-l));
+}
+.input::-moz-placeholder, .textarea::-moz-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.input::-webkit-input-placeholder, .textarea::-webkit-input-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.input:-moz-placeholder, .textarea:-moz-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.input:-ms-input-placeholder, .textarea:-ms-input-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.input:hover, .textarea:hover, .is-hovered.input, .is-hovered.textarea {
+  --bulma-input-border-l-delta: var(--bulma-input-hover-border-l-delta);
+}
+.input:active, .textarea:active, .is-active.input, .is-active.textarea {
+  --bulma-input-border-l-delta: var(--bulma-input-active-border-l-delta);
+}
+.input:focus, .textarea:focus, .input:focus-within, .textarea:focus-within, .is-focused.input, .is-focused.textarea {
+  border-color: hsl(var(--bulma-input-focus-h), var(--bulma-input-focus-s), var(--bulma-input-focus-l));
+  box-shadow: var(--bulma-input-focus-shadow-size) hsla(var(--bulma-input-focus-h), var(--bulma-input-focus-s), var(--bulma-input-focus-l), var(--bulma-input-focus-shadow-alpha));
+}
+[disabled].input, [disabled].textarea, fieldset[disabled] .input, fieldset[disabled] .textarea {
+  background-color: var(--bulma-input-disabled-background-color);
+  border-color: var(--bulma-input-disabled-border-color);
+  box-shadow: none;
+  color: var(--bulma-input-disabled-color);
+}
+[disabled].input::-moz-placeholder, [disabled].textarea::-moz-placeholder, fieldset[disabled] .input::-moz-placeholder, fieldset[disabled] .textarea::-moz-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+[disabled].input::-webkit-input-placeholder, [disabled].textarea::-webkit-input-placeholder, fieldset[disabled] .input::-webkit-input-placeholder, fieldset[disabled] .textarea::-webkit-input-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+[disabled].input:-moz-placeholder, [disabled].textarea:-moz-placeholder, fieldset[disabled] .input:-moz-placeholder, fieldset[disabled] .textarea:-moz-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+[disabled].input:-ms-input-placeholder, [disabled].textarea:-ms-input-placeholder, fieldset[disabled] .input:-ms-input-placeholder, fieldset[disabled] .textarea:-ms-input-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+
+.textarea, .input {
+  box-shadow: inset 0 0.0625em 0.125em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.05);
+  max-width: 100%;
+  width: 100%;
+}
+[readonly].textarea, [readonly].input {
+  box-shadow: none;
+}
+.is-white.textarea, .is-white.input {
+  --bulma-input-h: var(--bulma-white-h);
+  --bulma-input-s: var(--bulma-white-s);
+  --bulma-input-l: var(--bulma-white-l);
+  --bulma-input-focus-h: var(--bulma-white-h);
+  --bulma-input-focus-s: var(--bulma-white-s);
+  --bulma-input-focus-l: var(--bulma-white-l);
+  --bulma-input-border-l: var(--bulma-white-l);
+}
+.is-black.textarea, .is-black.input {
+  --bulma-input-h: var(--bulma-black-h);
+  --bulma-input-s: var(--bulma-black-s);
+  --bulma-input-l: var(--bulma-black-l);
+  --bulma-input-focus-h: var(--bulma-black-h);
+  --bulma-input-focus-s: var(--bulma-black-s);
+  --bulma-input-focus-l: var(--bulma-black-l);
+  --bulma-input-border-l: var(--bulma-black-l);
+}
+.is-light.textarea, .is-light.input {
+  --bulma-input-h: var(--bulma-light-h);
+  --bulma-input-s: var(--bulma-light-s);
+  --bulma-input-l: var(--bulma-light-l);
+  --bulma-input-focus-h: var(--bulma-light-h);
+  --bulma-input-focus-s: var(--bulma-light-s);
+  --bulma-input-focus-l: var(--bulma-light-l);
+  --bulma-input-border-l: var(--bulma-light-l);
+}
+.is-dark.textarea, .is-dark.input {
+  --bulma-input-h: var(--bulma-dark-h);
+  --bulma-input-s: var(--bulma-dark-s);
+  --bulma-input-l: var(--bulma-dark-l);
+  --bulma-input-focus-h: var(--bulma-dark-h);
+  --bulma-input-focus-s: var(--bulma-dark-s);
+  --bulma-input-focus-l: var(--bulma-dark-l);
+  --bulma-input-border-l: var(--bulma-dark-l);
+}
+.is-text.textarea, .is-text.input {
+  --bulma-input-h: var(--bulma-text-h);
+  --bulma-input-s: var(--bulma-text-s);
+  --bulma-input-l: var(--bulma-text-l);
+  --bulma-input-focus-h: var(--bulma-text-h);
+  --bulma-input-focus-s: var(--bulma-text-s);
+  --bulma-input-focus-l: var(--bulma-text-l);
+  --bulma-input-border-l: var(--bulma-text-l);
+}
+.is-primary.textarea, .is-primary.input {
+  --bulma-input-h: var(--bulma-primary-h);
+  --bulma-input-s: var(--bulma-primary-s);
+  --bulma-input-l: var(--bulma-primary-l);
+  --bulma-input-focus-h: var(--bulma-primary-h);
+  --bulma-input-focus-s: var(--bulma-primary-s);
+  --bulma-input-focus-l: var(--bulma-primary-l);
+  --bulma-input-border-l: var(--bulma-primary-l);
+}
+.is-link.textarea, .is-link.input {
+  --bulma-input-h: var(--bulma-link-h);
+  --bulma-input-s: var(--bulma-link-s);
+  --bulma-input-l: var(--bulma-link-l);
+  --bulma-input-focus-h: var(--bulma-link-h);
+  --bulma-input-focus-s: var(--bulma-link-s);
+  --bulma-input-focus-l: var(--bulma-link-l);
+  --bulma-input-border-l: var(--bulma-link-l);
+}
+.is-info.textarea, .is-info.input {
+  --bulma-input-h: var(--bulma-info-h);
+  --bulma-input-s: var(--bulma-info-s);
+  --bulma-input-l: var(--bulma-info-l);
+  --bulma-input-focus-h: var(--bulma-info-h);
+  --bulma-input-focus-s: var(--bulma-info-s);
+  --bulma-input-focus-l: var(--bulma-info-l);
+  --bulma-input-border-l: var(--bulma-info-l);
+}
+.is-success.textarea, .is-success.input {
+  --bulma-input-h: var(--bulma-success-h);
+  --bulma-input-s: var(--bulma-success-s);
+  --bulma-input-l: var(--bulma-success-l);
+  --bulma-input-focus-h: var(--bulma-success-h);
+  --bulma-input-focus-s: var(--bulma-success-s);
+  --bulma-input-focus-l: var(--bulma-success-l);
+  --bulma-input-border-l: var(--bulma-success-l);
+}
+.is-warning.textarea, .is-warning.input {
+  --bulma-input-h: var(--bulma-warning-h);
+  --bulma-input-s: var(--bulma-warning-s);
+  --bulma-input-l: var(--bulma-warning-l);
+  --bulma-input-focus-h: var(--bulma-warning-h);
+  --bulma-input-focus-s: var(--bulma-warning-s);
+  --bulma-input-focus-l: var(--bulma-warning-l);
+  --bulma-input-border-l: var(--bulma-warning-l);
+}
+.is-danger.textarea, .is-danger.input {
+  --bulma-input-h: var(--bulma-danger-h);
+  --bulma-input-s: var(--bulma-danger-s);
+  --bulma-input-l: var(--bulma-danger-l);
+  --bulma-input-focus-h: var(--bulma-danger-h);
+  --bulma-input-focus-s: var(--bulma-danger-s);
+  --bulma-input-focus-l: var(--bulma-danger-l);
+  --bulma-input-border-l: var(--bulma-danger-l);
+}
+.is-small.textarea, .is-small.input {
+  border-radius: var(--bulma-radius-small);
+  font-size: var(--bulma-size-small);
+}
+.is-medium.textarea, .is-medium.input {
+  font-size: var(--bulma-size-medium);
+}
+.is-large.textarea, .is-large.input {
+  font-size: var(--bulma-size-large);
+}
+.is-fullwidth.textarea, .is-fullwidth.input {
+  display: block;
+  width: 100%;
+}
+.is-inline.textarea, .is-inline.input {
+  display: inline;
+  width: auto;
+}
+
+.input.is-rounded {
+  border-radius: var(--bulma-radius-rounded);
+  padding-left: calc(calc(0.75em - 1px) + 0.375em);
+  padding-right: calc(calc(0.75em - 1px) + 0.375em);
+}
+.input.is-static {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.textarea {
+  --bulma-textarea-padding: var(--bulma-control-padding-horizontal);
+  --bulma-textarea-max-height: 40em;
+  --bulma-textarea-min-height: 8em;
+  display: block;
+  max-width: 100%;
+  min-width: 100%;
+  padding: var(--bulma-textarea-padding);
+  resize: vertical;
+}
+.textarea:not([rows]) {
+  max-height: var(--bulma-textarea-max-height);
+  min-height: var(--bulma-textarea-min-height);
+}
+.textarea[rows] {
+  height: initial;
+}
+.textarea.has-fixed-size {
+  resize: none;
+}
+
+/*# sourceMappingURL=input-textarea.css.map */

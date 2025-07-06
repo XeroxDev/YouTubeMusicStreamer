@@ -1,0 +1,347 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.select:not(.is-multiple):not(.is-loading)::after {
+  border: 0.125em solid var(--bulma-arrow-color);
+  border-right: 0;
+  border-top: 0;
+  content: " ";
+  display: block;
+  height: 0.625em;
+  margin-top: -0.4375em;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  transition-duration: var(--bulma-duration);
+  transition-property: border-color;
+  width: 0.625em;
+}
+
+.select select {
+  align-items: center;
+  appearance: none;
+  border-color: transparent;
+  border-style: solid;
+  border-width: var(--bulma-control-border-width);
+  border-radius: var(--bulma-control-radius);
+  box-shadow: none;
+  display: inline-flex;
+  font-size: var(--bulma-control-size);
+  height: var(--bulma-control-height);
+  justify-content: flex-start;
+  line-height: var(--bulma-control-line-height);
+  padding-bottom: var(--bulma-control-padding-vertical);
+  padding-left: var(--bulma-control-padding-horizontal);
+  padding-right: var(--bulma-control-padding-horizontal);
+  padding-top: var(--bulma-control-padding-vertical);
+  position: relative;
+  transition-duration: var(--bulma-duration);
+  transition-property: background-color, border-color, box-shadow, color;
+  vertical-align: top;
+}
+.select select:focus, .select select:focus-visible, .select select:focus-within, .select select.is-focused, .select select:active, .select select.is-active {
+  outline: none;
+}
+.select select[disabled], fieldset[disabled] .select select, .select fieldset[disabled] select {
+  cursor: not-allowed;
+}
+
+.select.is-loading::after {
+  animation: spinAround 500ms infinite linear;
+  border: 2px solid var(--bulma-loading-color);
+  border-radius: var(--bulma-radius-rounded);
+  border-right-color: transparent;
+  border-top-color: transparent;
+  content: "";
+  display: block;
+  height: 1em;
+  position: relative;
+  width: 1em;
+}
+
+.control,
+.input,
+.textarea,
+.select {
+  --bulma-input-h: var(--bulma-scheme-h);
+  --bulma-input-s: var(--bulma-scheme-s);
+  --bulma-input-l: var(--bulma-scheme-main-l);
+  --bulma-input-border-style: solid;
+  --bulma-input-border-width: var(--bulma-control-border-width);
+  --bulma-input-border-l: var(--bulma-border-l);
+  --bulma-input-border-l-delta: 0%;
+  --bulma-input-hover-border-l-delta: var(--bulma-hover-border-l-delta);
+  --bulma-input-active-border-l-delta: var(--bulma-active-border-l-delta);
+  --bulma-input-focus-h: var(--bulma-focus-h);
+  --bulma-input-focus-s: var(--bulma-focus-s);
+  --bulma-input-focus-l: var(--bulma-focus-l);
+  --bulma-input-focus-shadow-size: var(--bulma-focus-shadow-size);
+  --bulma-input-focus-shadow-alpha: var(--bulma-focus-shadow-alpha);
+  --bulma-input-color-l: var(--bulma-text-strong-l);
+  --bulma-input-background-l: var(--bulma-scheme-main-l);
+  --bulma-input-background-l-delta: 0%;
+  --bulma-input-height: var(--bulma-control-height);
+  --bulma-input-shadow: inset 0 0.0625em 0.125em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.05);
+  --bulma-input-placeholder-color: hsla(var(--bulma-text-h), var(--bulma-text-s), var(--bulma-text-strong-l), 0.3);
+  --bulma-input-disabled-color: var(--bulma-text-weak);
+  --bulma-input-disabled-background-color: var(--bulma-background);
+  --bulma-input-disabled-border-color: var(--bulma-background);
+  --bulma-input-disabled-placeholder-color: hsla(var(--bulma-text-h), var(--bulma-text-s), var(--bulma-text-weak-l), 0.3);
+  --bulma-input-arrow: var(--bulma-link);
+  --bulma-input-icon-color: var(--bulma-text-light);
+  --bulma-input-icon-hover-color: var(--bulma-text-weak);
+  --bulma-input-icon-focus-color: var(--bulma-link);
+  --bulma-input-radius: var(--bulma-radius);
+}
+
+.select select {
+  background-color: hsl(var(--bulma-input-h), var(--bulma-input-s), calc(var(--bulma-input-background-l) + var(--bulma-input-background-l-delta)));
+  border-color: hsl(var(--bulma-input-h), var(--bulma-input-s), calc(var(--bulma-input-border-l) + var(--bulma-input-border-l-delta)));
+  border-radius: var(--bulma-input-radius);
+  color: hsl(var(--bulma-input-h), var(--bulma-input-s), var(--bulma-input-color-l));
+}
+.select select::-moz-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.select select::-webkit-input-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.select select:-moz-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.select select:-ms-input-placeholder {
+  color: var(--bulma-input-placeholder-color);
+}
+.select select:hover, .select select.is-hovered {
+  --bulma-input-border-l-delta: var(--bulma-input-hover-border-l-delta);
+}
+.select select:active, .select select.is-active {
+  --bulma-input-border-l-delta: var(--bulma-input-active-border-l-delta);
+}
+.select select:focus, .select select:focus-within, .select select.is-focused {
+  border-color: hsl(var(--bulma-input-focus-h), var(--bulma-input-focus-s), var(--bulma-input-focus-l));
+  box-shadow: var(--bulma-input-focus-shadow-size) hsla(var(--bulma-input-focus-h), var(--bulma-input-focus-s), var(--bulma-input-focus-l), var(--bulma-input-focus-shadow-alpha));
+}
+.select select[disabled], fieldset[disabled] .select select, .select fieldset[disabled] select {
+  background-color: var(--bulma-input-disabled-background-color);
+  border-color: var(--bulma-input-disabled-border-color);
+  box-shadow: none;
+  color: var(--bulma-input-disabled-color);
+}
+.select select[disabled]::-moz-placeholder, fieldset[disabled] .select select::-moz-placeholder, .select fieldset[disabled] select::-moz-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+.select select[disabled]::-webkit-input-placeholder, fieldset[disabled] .select select::-webkit-input-placeholder, .select fieldset[disabled] select::-webkit-input-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+.select select[disabled]:-moz-placeholder, fieldset[disabled] .select select:-moz-placeholder, .select fieldset[disabled] select:-moz-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+.select select[disabled]:-ms-input-placeholder, fieldset[disabled] .select select:-ms-input-placeholder, .select fieldset[disabled] select:-ms-input-placeholder {
+  color: var(--bulma-input-disabled-placeholder-color);
+}
+
+.select {
+  --bulma-input-h: var(--bulma-scheme-h);
+  --bulma-input-s: var(--bulma-scheme-s);
+  --bulma-input-border-style: solid;
+  --bulma-input-border-width: 1px;
+  --bulma-input-border-l: var(--bulma-border-l);
+  display: inline-block;
+  max-width: 100%;
+  position: relative;
+  vertical-align: top;
+}
+.select:not(.is-multiple) {
+  height: var(--bulma-control-height);
+}
+.select:not(.is-multiple):not(.is-loading)::after {
+  inset-inline-end: 1.125em;
+  z-index: 4;
+}
+.select.is-rounded select {
+  border-radius: var(--bulma-radius-rounded);
+  padding-inline-start: 1em;
+}
+.select select {
+  cursor: pointer;
+  display: block;
+  font-size: 1em;
+  max-width: 100%;
+  outline: none;
+}
+.select select::-ms-expand {
+  display: none;
+}
+.select select[disabled]:hover, fieldset[disabled] .select select:hover {
+  border-color: var(--bulma-background);
+}
+.select select:not([multiple]) {
+  padding-inline-end: 2.5em;
+}
+.select select[multiple] {
+  height: auto;
+  padding: 0;
+}
+.select select[multiple] option {
+  padding: 0.5em 1em;
+}
+.select.is-white {
+  --bulma-input-h: var(--bulma-white-h);
+  --bulma-input-s: var(--bulma-white-s);
+  --bulma-input-l: var(--bulma-white-l);
+  --bulma-input-focus-h: var(--bulma-white-h);
+  --bulma-input-focus-s: var(--bulma-white-s);
+  --bulma-input-focus-l: var(--bulma-white-l);
+  --bulma-input-border-l: var(--bulma-white-l);
+  --bulma-arrow-color: var(--bulma-white);
+}
+.select.is-black {
+  --bulma-input-h: var(--bulma-black-h);
+  --bulma-input-s: var(--bulma-black-s);
+  --bulma-input-l: var(--bulma-black-l);
+  --bulma-input-focus-h: var(--bulma-black-h);
+  --bulma-input-focus-s: var(--bulma-black-s);
+  --bulma-input-focus-l: var(--bulma-black-l);
+  --bulma-input-border-l: var(--bulma-black-l);
+  --bulma-arrow-color: var(--bulma-black);
+}
+.select.is-light {
+  --bulma-input-h: var(--bulma-light-h);
+  --bulma-input-s: var(--bulma-light-s);
+  --bulma-input-l: var(--bulma-light-l);
+  --bulma-input-focus-h: var(--bulma-light-h);
+  --bulma-input-focus-s: var(--bulma-light-s);
+  --bulma-input-focus-l: var(--bulma-light-l);
+  --bulma-input-border-l: var(--bulma-light-l);
+  --bulma-arrow-color: var(--bulma-light);
+}
+.select.is-dark {
+  --bulma-input-h: var(--bulma-dark-h);
+  --bulma-input-s: var(--bulma-dark-s);
+  --bulma-input-l: var(--bulma-dark-l);
+  --bulma-input-focus-h: var(--bulma-dark-h);
+  --bulma-input-focus-s: var(--bulma-dark-s);
+  --bulma-input-focus-l: var(--bulma-dark-l);
+  --bulma-input-border-l: var(--bulma-dark-l);
+  --bulma-arrow-color: var(--bulma-dark);
+}
+.select.is-text {
+  --bulma-input-h: var(--bulma-text-h);
+  --bulma-input-s: var(--bulma-text-s);
+  --bulma-input-l: var(--bulma-text-l);
+  --bulma-input-focus-h: var(--bulma-text-h);
+  --bulma-input-focus-s: var(--bulma-text-s);
+  --bulma-input-focus-l: var(--bulma-text-l);
+  --bulma-input-border-l: var(--bulma-text-l);
+  --bulma-arrow-color: var(--bulma-text);
+}
+.select.is-primary {
+  --bulma-input-h: var(--bulma-primary-h);
+  --bulma-input-s: var(--bulma-primary-s);
+  --bulma-input-l: var(--bulma-primary-l);
+  --bulma-input-focus-h: var(--bulma-primary-h);
+  --bulma-input-focus-s: var(--bulma-primary-s);
+  --bulma-input-focus-l: var(--bulma-primary-l);
+  --bulma-input-border-l: var(--bulma-primary-l);
+  --bulma-arrow-color: var(--bulma-primary);
+}
+.select.is-link {
+  --bulma-input-h: var(--bulma-link-h);
+  --bulma-input-s: var(--bulma-link-s);
+  --bulma-input-l: var(--bulma-link-l);
+  --bulma-input-focus-h: var(--bulma-link-h);
+  --bulma-input-focus-s: var(--bulma-link-s);
+  --bulma-input-focus-l: var(--bulma-link-l);
+  --bulma-input-border-l: var(--bulma-link-l);
+  --bulma-arrow-color: var(--bulma-link);
+}
+.select.is-info {
+  --bulma-input-h: var(--bulma-info-h);
+  --bulma-input-s: var(--bulma-info-s);
+  --bulma-input-l: var(--bulma-info-l);
+  --bulma-input-focus-h: var(--bulma-info-h);
+  --bulma-input-focus-s: var(--bulma-info-s);
+  --bulma-input-focus-l: var(--bulma-info-l);
+  --bulma-input-border-l: var(--bulma-info-l);
+  --bulma-arrow-color: var(--bulma-info);
+}
+.select.is-success {
+  --bulma-input-h: var(--bulma-success-h);
+  --bulma-input-s: var(--bulma-success-s);
+  --bulma-input-l: var(--bulma-success-l);
+  --bulma-input-focus-h: var(--bulma-success-h);
+  --bulma-input-focus-s: var(--bulma-success-s);
+  --bulma-input-focus-l: var(--bulma-success-l);
+  --bulma-input-border-l: var(--bulma-success-l);
+  --bulma-arrow-color: var(--bulma-success);
+}
+.select.is-warning {
+  --bulma-input-h: var(--bulma-warning-h);
+  --bulma-input-s: var(--bulma-warning-s);
+  --bulma-input-l: var(--bulma-warning-l);
+  --bulma-input-focus-h: var(--bulma-warning-h);
+  --bulma-input-focus-s: var(--bulma-warning-s);
+  --bulma-input-focus-l: var(--bulma-warning-l);
+  --bulma-input-border-l: var(--bulma-warning-l);
+  --bulma-arrow-color: var(--bulma-warning);
+}
+.select.is-danger {
+  --bulma-input-h: var(--bulma-danger-h);
+  --bulma-input-s: var(--bulma-danger-s);
+  --bulma-input-l: var(--bulma-danger-l);
+  --bulma-input-focus-h: var(--bulma-danger-h);
+  --bulma-input-focus-s: var(--bulma-danger-s);
+  --bulma-input-focus-l: var(--bulma-danger-l);
+  --bulma-input-border-l: var(--bulma-danger-l);
+  --bulma-arrow-color: var(--bulma-danger);
+}
+.select.is-small {
+  border-radius: var(--bulma-radius-small);
+  font-size: var(--bulma-size-small);
+}
+.select.is-medium {
+  font-size: var(--bulma-size-medium);
+}
+.select.is-large {
+  font-size: var(--bulma-size-large);
+}
+.select.is-disabled::after {
+  border-color: var(--bulma-text-weak) !important;
+  opacity: 0.5;
+}
+.select.is-fullwidth {
+  width: 100%;
+}
+.select.is-fullwidth select {
+  width: 100%;
+}
+.select.is-loading::after {
+  inset-inline-end: 0.625em;
+  margin-top: 0;
+  position: absolute;
+  top: 0.625em;
+  transform: none;
+}
+.select.is-loading.is-small:after {
+  font-size: var(--bulma-size-small);
+}
+.select.is-loading.is-medium:after {
+  font-size: var(--bulma-size-medium);
+}
+.select.is-loading.is-large:after {
+  font-size: var(--bulma-size-large);
+}
+
+/*# sourceMappingURL=select.css.map */

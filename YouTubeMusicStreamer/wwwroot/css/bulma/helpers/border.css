@@ -1,0 +1,17 @@
+.has-radius-small {
+  border-radius: var(--bulma-radius-small);
+}
+
+.has-radius-normal {
+  border-radius: var(--bulma-radius);
+}
+
+.has-radius-large {
+  border-radius: var(--bulma-radius-large);
+}
+
+.has-radius-rounded {
+  border-radius: var(--bulma-radius-rounded);
+}
+
+/*# sourceMappingURL=border.css.map */

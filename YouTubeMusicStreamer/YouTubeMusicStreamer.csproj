@@ -1,0 +1,165 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+        <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+        <RootNamespace>YouTubeMusicStreamer</RootNamespace>
+        <UseMaui>true</UseMaui>
+        <WindowsPackageType>None</WindowsPackageType>
+
+        <SingleProject>true</SingleProject>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PublisherName>XeroxDev</PublisherName>
+        <Authors>XeroxDev</Authors>
+
+        <!-- Display name -->
+        <ApplicationTitle>YouTube Music Streamer</ApplicationTitle>
+
+        <!-- App Identifier -->
+        <ApplicationId>io.fnux.youtubemusicstreamer</ApplicationId>
+
+        <GenerateProgramFile>false</GenerateProgramFile>
+        <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+        <StartupObject>YouTubeMusicStreamer.Program</StartupObject>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <PublishProfile>Properties\PublishProfiles\win-$(Platform).pubxml</PublishProfile>
+        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <Platforms>x86;x64;arm64</Platforms>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+    <!-- Versioning -->
+    <PropertyGroup>
+        <VersionMajor>0</VersionMajor> <!-- x-release-please-major -->
+        <VersionMinor>0</VersionMinor> <!-- x-release-please-minor -->
+        <VersionPatch>1</VersionPatch> <!-- x-release-please-patch -->
+
+        <ApplicationDisplayVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)</ApplicationDisplayVersion>
+        <ApplicationVersion>$(VersionMajor)$(VersionMinor.PadLeft(2, '0'))$(VersionPatch.PadLeft(2, '0'))</ApplicationVersion>
+        <Version>$(ApplicationDisplayVersion)</Version>
+        <AssemblyVersion>$(ApplicationDisplayVersion)</AssemblyVersion>
+        <FileVersion>$(ApplicationDisplayVersion)</FileVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+        <SassCompilerIncludeRuntime>true</SassCompilerIncludeRuntime>
+        <CompressionEnabled>false</CompressionEnabled>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- App Icon -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg"/>
+
+        <!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#111" BaseSize="128,128"/>
+
+        <!-- Images -->
+        <MauiImage Include="Resources\Images\*"/>
+
+        <!-- Custom Fonts -->
+        <MauiFont Include="Resources\Fonts\*"/>
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </MauiAsset>
+
+        <!-- License Files -->
+        <MauiAsset Include="$(SolutionDir)/LICENSE" LogicalName="LICENSE">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </MauiAsset>
+
+        <MauiAsset Include="$(SolutionDir)/ADDITIONAL-PERMISSIONS" LogicalName="ADDITIONAL-PERMISSIONS">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </MauiAsset>
+        
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.SassCompiler" Version="1.85.0"/>
+        <PackageReference Include="Blazored.Toast" Version="4.2.1"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0"/>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.40"/>
+        <PackageReference Include="NAudio.Wasapi" Version="2.2.1"/>
+        <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0"/>
+        <PackageReference Include="TwitchLib.Api" Version="3.9.0"/>
+        <PackageReference Include="TwitchLib.Client" Version="3.3.1"/>
+        <PackageReference Include="TwitchLib.EventSub.Websockets" Version="0.6.0-preview-dbc970c"/>
+        <PackageReference Include="Velopack" Version="0.0.1298"/>
+        <PackageReference Include="XeroxDev.YTMDesktop.Companion" Version="1.2.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Resources\Fonts\"/>
+        <Folder Include="Resources\Images\"/>
+        <Folder Include="Resources\Raw\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <MauiPlatformSpecificFolder Remove="Platforms\Android\"/>
+    </ItemGroup>
+
+    <Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild">
+        <GenerateBuildInfoTask ProjectDir="$(MSBuildProjectDirectory)"/>
+        <ItemGroup>
+            <Compile Include="$(MSBuildProjectDirectory)\GeneratedBuildInfo.cs"/>
+        </ItemGroup>
+    </Target>
+
+    <UsingTask TaskName="GenerateBuildInfoTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <ProjectDir ParameterType="System.String" Required="true"/>
+        </ParameterGroup>
+        <Task>
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                    var envPath = Path.Combine(ProjectDir, "..", ".env");
+                    var env = File.ReadAllLines(envPath)
+                    .Select(line => line.Split('#').First().Trim())     // Remove inline comments and trim whitespace
+                    .Where(line => !string.IsNullOrWhiteSpace(line))    // Skip empty lines
+                    .Select(line => line.Split(new[] {'='}, 2))         // Split into key and value (only on the first '=')
+                    .Where(parts => parts.Length == 2)                  // Ensure valid key-value pairs
+                    .ToDictionary(parts => parts[0].Trim(), parts => parts[1].Trim());
+                    
+                    if (!env.TryGetValue("GIT_COMMIT", out var gitCommit))
+                    {
+                        throw new Exception("GIT_COMMIT not found in .env file.");
+                    }
+                    
+                    if (!env.TryGetValue("TWITCH_CLIENT_ID", out var twitchClientId))
+                    {
+                        throw new Exception("TWITCH_CLIENT_ID not found in .env file.");
+                    }
+                    
+                    var buildTime = System.DateTime.UtcNow.ToString("o");
+                    var fileContent = $$"""
+                    namespace YouTubeMusicStreamer;
+
+                    public static partial class GeneratedBuildInfo
+                    {
+                        public const string GitCommit = "{{gitCommit}}";
+                        public const string TwitchClientId = "{{twitchClientId}}";
+                        public const string BuildTime = "{{buildTime}}";
+                    }
+                    """;
+                    
+                    System.IO.File.WriteAllText(Path.Combine(ProjectDir, "GeneratedBuildInfo.cs"), fileContent);
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <Target Name="GenerateThirdPartyLicenses" BeforeTargets="BeforeBuild" Condition="'$(Configuration)'=='Release'">
+        <Exec Command="dotnet tool restore"/>
+        <Exec Command="dotnet tool run nuget-license -i $(ProjectDir)$(MSBuildProjectFile) -t -o JsonPretty -d $(ProjectDir)Resources\Raw\ThirdPartyLicenses\ -fo $(ProjectDir)Resources\Raw\third-party-licenses.json -override $(ProjectDir)license-override.json" IgnoreExitCode="true"/>
+    </Target>
+    
+</Project>

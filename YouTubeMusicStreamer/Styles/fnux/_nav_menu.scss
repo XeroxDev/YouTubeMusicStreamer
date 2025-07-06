@@ -1,0 +1,47 @@
+﻿#main-menu {
+  z-index: 1000;
+  position: sticky;
+  top: 0;
+  height: 100%;
+  width: 48px;
+  background: var(--bulma-dark);
+  border-right: 1px solid var(--bulma-primary);
+  transition: width 0.2s;
+
+  &:hover {
+    width: fit-content;
+  }
+
+  * {
+    border-radius: 0;
+  }
+
+  .menu-list {
+    display: grid;
+    grid-template-rows: repeat(auto-fill, 48px);
+    grid-gap: 0;
+    padding: 0;
+    width: 100%;
+    overflow: hidden;
+
+    a {
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      padding: 0;
+
+      .icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+      }
+      
+      span {
+        padding-right: 0.5rem;
+      }
+    }
+  }
+}

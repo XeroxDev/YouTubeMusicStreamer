@@ -1,0 +1,45 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.is-overlay {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.is-relative {
+  position: relative !important;
+}
+
+.is-position-absolute {
+  position: absolute !important;
+}
+
+.is-position-fixed {
+  position: fixed !important;
+}
+
+.is-position-relative {
+  position: relative !important;
+}
+
+.is-position-static {
+  position: static !important;
+}
+
+.is-position-sticky {
+  position: sticky !important;
+}
+
+/*# sourceMappingURL=position.css.map */

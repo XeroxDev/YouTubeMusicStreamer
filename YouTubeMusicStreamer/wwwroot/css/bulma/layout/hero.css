@@ -1,0 +1,534 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.hero-video {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.hero {
+  --bulma-hero-body-padding: 3rem 1.5rem;
+  --bulma-hero-body-padding-tablet: 3rem 3rem;
+  --bulma-hero-body-padding-small: 1.5rem;
+  --bulma-hero-body-padding-medium: 9rem 4.5rem;
+  --bulma-hero-body-padding-large: 18rem 6rem;
+}
+
+.hero {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.hero .navbar {
+  background: none;
+}
+.hero .tabs ul {
+  border-bottom: none;
+}
+.hero.is-white {
+  --bulma-hero-h: var(--bulma-white-h);
+  --bulma-hero-s: var(--bulma-white-s);
+  --bulma-hero-background-l: var(--bulma-white-l);
+  --bulma-hero-color-l: var(--bulma-white-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-white .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-white .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-white .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-white .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-white.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-white.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-black {
+  --bulma-hero-h: var(--bulma-black-h);
+  --bulma-hero-s: var(--bulma-black-s);
+  --bulma-hero-background-l: var(--bulma-black-l);
+  --bulma-hero-color-l: var(--bulma-black-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-black .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-black .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-black .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-black .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-black.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-black.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-light {
+  --bulma-hero-h: var(--bulma-light-h);
+  --bulma-hero-s: var(--bulma-light-s);
+  --bulma-hero-background-l: var(--bulma-light-l);
+  --bulma-hero-color-l: var(--bulma-light-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-light .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-light .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-light .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-light .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-light.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-light.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-dark {
+  --bulma-hero-h: var(--bulma-dark-h);
+  --bulma-hero-s: var(--bulma-dark-s);
+  --bulma-hero-background-l: var(--bulma-dark-l);
+  --bulma-hero-color-l: var(--bulma-dark-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-dark .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-dark .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-dark .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-dark .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-dark.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-dark.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-text {
+  --bulma-hero-h: var(--bulma-text-h);
+  --bulma-hero-s: var(--bulma-text-s);
+  --bulma-hero-background-l: var(--bulma-text-l);
+  --bulma-hero-color-l: var(--bulma-text-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-text .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-text .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-text .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-text .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-text.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-text.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-primary {
+  --bulma-hero-h: var(--bulma-primary-h);
+  --bulma-hero-s: var(--bulma-primary-s);
+  --bulma-hero-background-l: var(--bulma-primary-l);
+  --bulma-hero-color-l: var(--bulma-primary-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-primary .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-primary .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-primary .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-primary .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-primary.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-primary.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-link {
+  --bulma-hero-h: var(--bulma-link-h);
+  --bulma-hero-s: var(--bulma-link-s);
+  --bulma-hero-background-l: var(--bulma-link-l);
+  --bulma-hero-color-l: var(--bulma-link-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-link .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-link .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-link .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-link .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-link.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-link.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-info {
+  --bulma-hero-h: var(--bulma-info-h);
+  --bulma-hero-s: var(--bulma-info-s);
+  --bulma-hero-background-l: var(--bulma-info-l);
+  --bulma-hero-color-l: var(--bulma-info-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-info .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-info .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-info .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-info .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-info.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-info.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-success {
+  --bulma-hero-h: var(--bulma-success-h);
+  --bulma-hero-s: var(--bulma-success-s);
+  --bulma-hero-background-l: var(--bulma-success-l);
+  --bulma-hero-color-l: var(--bulma-success-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-success .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-success .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-success .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-success .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-success.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-success.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-warning {
+  --bulma-hero-h: var(--bulma-warning-h);
+  --bulma-hero-s: var(--bulma-warning-s);
+  --bulma-hero-background-l: var(--bulma-warning-l);
+  --bulma-hero-color-l: var(--bulma-warning-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-warning .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-warning .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-warning .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-warning .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-warning.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-warning.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-danger {
+  --bulma-hero-h: var(--bulma-danger-h);
+  --bulma-hero-s: var(--bulma-danger-s);
+  --bulma-hero-background-l: var(--bulma-danger-l);
+  --bulma-hero-color-l: var(--bulma-danger-invert-l);
+  background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-danger .navbar {
+  --bulma-navbar-item-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-hover-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-navbar-item-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-navbar-item-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-danger .tabs {
+  --bulma-tabs-link-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-background-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-tabs-boxed-link-active-border-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+  --bulma-tabs-link-active-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+.hero.is-danger .subtitle {
+  --bulma-subtitle-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-subtitle-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-danger .title {
+  --bulma-title-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+  --bulma-title-strong-color: hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l));
+}
+.hero.is-danger.is-bold {
+  background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+}
+@media screen and (max-width: 768px) {
+  .hero.is-danger.is-bold .navbar-menu {
+    background-image: linear-gradient(141deg, hsl(calc(var(--bulma-hero-h) - 5deg), calc(var(--bulma-hero-s) + 10%), calc(var(--bulma-hero-background-l) + 5%)) 0%, hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-color-l)) 71%, hsl(calc(var(--bulma-hero-h) + 5deg), calc(var(--bulma-hero-s) - 10%), calc(var(--bulma-hero-background-l) - 5%)) 100%);
+  }
+}
+.hero.is-small .hero-body {
+  padding: var(--bulma-hero-body-padding-small);
+}
+@media screen and (min-width: 769px), print {
+  .hero.is-medium .hero-body {
+    padding: var(--bulma-hero-body-padding-medium);
+  }
+}
+@media screen and (min-width: 769px), print {
+  .hero.is-large .hero-body {
+    padding: var(--bulma-hero-body-padding-large);
+  }
+}
+.hero.is-halfheight .hero-body, .hero.is-fullheight .hero-body, .hero.is-fullheight-with-navbar .hero-body {
+  align-items: center;
+  display: flex;
+}
+.hero.is-halfheight .hero-body > .container, .hero.is-fullheight .hero-body > .container, .hero.is-fullheight-with-navbar .hero-body > .container {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+.hero.is-halfheight {
+  min-height: 50vh;
+}
+.hero.is-fullheight {
+  min-height: 100vh;
+}
+
+.hero-video {
+  overflow: hidden;
+}
+.hero-video video {
+  left: 50%;
+  min-height: 100%;
+  min-width: 100%;
+  position: absolute;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
+.hero-video.is-transparent {
+  opacity: 0.3;
+}
+@media screen and (max-width: 768px) {
+  .hero-video {
+    display: none;
+  }
+}
+
+.hero-buttons {
+  margin-top: 1.5rem;
+}
+@media screen and (max-width: 768px) {
+  .hero-buttons .button {
+    display: flex;
+  }
+  .hero-buttons .button:not(:last-child) {
+    margin-bottom: 0.75rem;
+  }
+}
+@media screen and (min-width: 769px), print {
+  .hero-buttons {
+    display: flex;
+    justify-content: center;
+  }
+  .hero-buttons .button:not(:last-child) {
+    margin-inline-end: 1.5rem;
+  }
+}
+
+.hero-head,
+.hero-foot {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.hero-body {
+  flex-grow: 1;
+  flex-shrink: 0;
+  padding: var(--bulma-hero-body-padding);
+}
+@media screen and (min-width: 769px), print {
+  .hero-body {
+    padding: var(--bulma-hero-body-padding-tablet);
+  }
+}
+
+/*# sourceMappingURL=hero.css.map */

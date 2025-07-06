@@ -1,0 +1,213 @@
+:root {
+  --bulma-control-radius: var(--bulma-radius);
+  --bulma-control-radius-small: var(--bulma-radius-small);
+  --bulma-control-border-width: 1px;
+  --bulma-control-height: 2.5em;
+  --bulma-control-line-height: 1.5;
+  --bulma-control-padding-vertical: calc(0.5em - 1px);
+  --bulma-control-padding-horizontal: calc(0.75em - 1px);
+  --bulma-control-size: var(--bulma-size-normal);
+  --bulma-control-focus-shadow-l: 50%;
+}
+
+.notification:not(:last-child) {
+  margin-bottom: var(--bulma-block-spacing);
+}
+
+.notification {
+  --bulma-notification-h: var(--bulma-scheme-h);
+  --bulma-notification-s: var(--bulma-scheme-s);
+  --bulma-notification-background-l: var(--bulma-background-l);
+  --bulma-notification-color-l: var(--bulma-text-strong-l);
+  --bulma-notification-code-background-color: var(--bulma-scheme-main);
+  --bulma-notification-radius: var(--bulma-radius);
+  --bulma-notification-padding: 1.375em 1.5em;
+}
+
+.notification {
+  background-color: hsl(var(--bulma-notification-h), var(--bulma-notification-s), var(--bulma-notification-background-l));
+  border-radius: var(--bulma-notification-radius);
+  color: hsl(var(--bulma-notification-h), var(--bulma-notification-s), var(--bulma-notification-color-l));
+  padding: var(--bulma-notification-padding);
+  position: relative;
+}
+.notification a:not(.button):not(.dropdown-item) {
+  color: currentColor;
+  text-decoration: underline;
+}
+.notification strong {
+  color: currentColor;
+}
+.notification code,
+.notification pre {
+  background: var(--bulma-notification-code-background-color);
+}
+.notification pre code {
+  background: transparent;
+}
+.notification > .delete {
+  position: absolute;
+  inset-inline-end: 1rem;
+  top: 1rem;
+}
+.notification .title,
+.notification .subtitle,
+.notification .content {
+  color: currentColor;
+}
+.notification.is-white {
+  --bulma-notification-h: var(--bulma-white-h);
+  --bulma-notification-s: var(--bulma-white-s);
+  --bulma-notification-background-l: var(--bulma-white-l);
+  --bulma-notification-color-l: var(--bulma-white-invert-l);
+}
+.notification.is-white.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-white-light-invert-l);
+}
+.notification.is-white.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-white-dark-invert-l);
+}
+.notification.is-black {
+  --bulma-notification-h: var(--bulma-black-h);
+  --bulma-notification-s: var(--bulma-black-s);
+  --bulma-notification-background-l: var(--bulma-black-l);
+  --bulma-notification-color-l: var(--bulma-black-invert-l);
+}
+.notification.is-black.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-black-light-invert-l);
+}
+.notification.is-black.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-black-dark-invert-l);
+}
+.notification.is-light {
+  --bulma-notification-h: var(--bulma-light-h);
+  --bulma-notification-s: var(--bulma-light-s);
+  --bulma-notification-background-l: var(--bulma-light-l);
+  --bulma-notification-color-l: var(--bulma-light-invert-l);
+}
+.notification.is-light.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-light-light-invert-l);
+}
+.notification.is-light.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-light-dark-invert-l);
+}
+.notification.is-dark {
+  --bulma-notification-h: var(--bulma-dark-h);
+  --bulma-notification-s: var(--bulma-dark-s);
+  --bulma-notification-background-l: var(--bulma-dark-l);
+  --bulma-notification-color-l: var(--bulma-dark-invert-l);
+}
+.notification.is-dark.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-dark-light-invert-l);
+}
+.notification.is-dark.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-dark-dark-invert-l);
+}
+.notification.is-text {
+  --bulma-notification-h: var(--bulma-text-h);
+  --bulma-notification-s: var(--bulma-text-s);
+  --bulma-notification-background-l: var(--bulma-text-l);
+  --bulma-notification-color-l: var(--bulma-text-invert-l);
+}
+.notification.is-text.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-text-light-invert-l);
+}
+.notification.is-text.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-text-dark-invert-l);
+}
+.notification.is-primary {
+  --bulma-notification-h: var(--bulma-primary-h);
+  --bulma-notification-s: var(--bulma-primary-s);
+  --bulma-notification-background-l: var(--bulma-primary-l);
+  --bulma-notification-color-l: var(--bulma-primary-invert-l);
+}
+.notification.is-primary.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-primary-light-invert-l);
+}
+.notification.is-primary.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-primary-dark-invert-l);
+}
+.notification.is-link {
+  --bulma-notification-h: var(--bulma-link-h);
+  --bulma-notification-s: var(--bulma-link-s);
+  --bulma-notification-background-l: var(--bulma-link-l);
+  --bulma-notification-color-l: var(--bulma-link-invert-l);
+}
+.notification.is-link.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-link-light-invert-l);
+}
+.notification.is-link.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-link-dark-invert-l);
+}
+.notification.is-info {
+  --bulma-notification-h: var(--bulma-info-h);
+  --bulma-notification-s: var(--bulma-info-s);
+  --bulma-notification-background-l: var(--bulma-info-l);
+  --bulma-notification-color-l: var(--bulma-info-invert-l);
+}
+.notification.is-info.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-info-light-invert-l);
+}
+.notification.is-info.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-info-dark-invert-l);
+}
+.notification.is-success {
+  --bulma-notification-h: var(--bulma-success-h);
+  --bulma-notification-s: var(--bulma-success-s);
+  --bulma-notification-background-l: var(--bulma-success-l);
+  --bulma-notification-color-l: var(--bulma-success-invert-l);
+}
+.notification.is-success.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-success-light-invert-l);
+}
+.notification.is-success.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-success-dark-invert-l);
+}
+.notification.is-warning {
+  --bulma-notification-h: var(--bulma-warning-h);
+  --bulma-notification-s: var(--bulma-warning-s);
+  --bulma-notification-background-l: var(--bulma-warning-l);
+  --bulma-notification-color-l: var(--bulma-warning-invert-l);
+}
+.notification.is-warning.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-warning-light-invert-l);
+}
+.notification.is-warning.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-warning-dark-invert-l);
+}
+.notification.is-danger {
+  --bulma-notification-h: var(--bulma-danger-h);
+  --bulma-notification-s: var(--bulma-danger-s);
+  --bulma-notification-background-l: var(--bulma-danger-l);
+  --bulma-notification-color-l: var(--bulma-danger-invert-l);
+}
+.notification.is-danger.is-light {
+  --bulma-notification-background-l: 90%;
+  --bulma-notification-color-l: var(--bulma-danger-light-invert-l);
+}
+.notification.is-danger.is-dark {
+  --bulma-notification-background-l: 20%;
+  --bulma-notification-color-l: var(--bulma-danger-dark-invert-l);
+}
+
+/*# sourceMappingURL=notification.css.map */

@@ -1,0 +1,63 @@
+﻿@using YouTubeMusicStreamer.Enums
+@if (TwitchService.State == ConnectorState.Loading)
+{
+    <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
+        <div class="has-text-centered">
+            <h3>Loading...</h3>
+            <h1 class="mat-icon mt-4 a-rotate">progress_activity</h1>
+        </div>
+    </div>
+
+    return;
+}
+
+@if (TwitchService.State != ConnectorState.LoggedIn)
+{
+    <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
+        @if (TwitchService.State == ConnectorState.LoggedIn)
+        {
+            <h4 class="has-text-centered">Connected to Twitch</h4>
+        }
+        else
+        {
+            <h4 class="has-text-centered">Not connected to Twitch</h4>
+        }
+
+        <button @onclick="StartOAuthFlow" class="button has-background-twitch mt-4 is-large is-responsive is-flex is-justify-content-center is-align-items-center"
+                disabled="@(TwitchService.State == ConnectorState.LoggingIn)">
+            @if (TwitchService.State != ConnectorState.LoggingIn)
+            {
+                <span class="icon is-small">
+                    <i class="brand-icon">twitch</i>
+                </span>
+                <span>Login with Twitch</span>
+            }
+            else
+            {
+                <span class="icon is-small">
+                    <i class="mat-icon a-rotate">progress_activity</i>
+                </span>
+                <span>Waiting for authentication</span>
+            }
+        </button>
+    </div>
+
+    return;
+}
+
+<div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
+    <h4 class="has-text-centered has-text-success">Connected to Twitch</h4>
+    <div class="media mt-4">
+        <div class="media-left">
+            <figure class="image is-48x48">
+                <img
+                    src="@TwitchService.ProfileImageUrl"
+                    alt="@TwitchService.Username"/>
+            </figure>
+        </div>
+        <div class="media-content">
+            <p class="title is-4">@TwitchService.Username</p>
+            <p class="subtitle is-6">Not @(TwitchService.Username)? <a @onclick="Logout">Log out</a></p>
+        </div>
+    </div>
+</div>

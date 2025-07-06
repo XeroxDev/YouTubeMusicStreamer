@@ -1,0 +1,167 @@
+﻿@page "/ytmdesktop"
+@using YouTubeMusicStreamer.Components.Pages.YTMDesktop.Components
+
+<PageHeader Title="YTMDesktop Settings" SubTitle="Here you can configure your YTMDesktop specific settings."></PageHeader>
+
+<TabControl>
+    <TabPage Text="Server" Icon="host">
+        <div class="card">
+            <div class="card-content">
+                <div class="content is-flex is-flex-direction-column is-gap-1">
+                    <div class="columns">
+                        <div class="field column">
+                            <label class="label">Auto Start</label>
+                            <div class="control is-expanded">
+                                <Toggle @bind-Value="_autoStartServer" OffLabel="Disabled" OnLabel="Enabled"/>
+                            </div>
+                            <p class="help">This server is needed for the "clients" to display track information in streaming softwares</p>
+                            <p class="help">Default: <code>Disabled</code></p>
+
+                            <div class="control">
+                                <button class="button @(_webSocketService.IsRunning ? "is-danger" : "is-success")" @onclick="ToggleServer">
+                                    <span class="icon is-small">
+                                        <i class="mat-icon">@(_webSocketService.IsRunning ? "stop" : "play_arrow")</i>
+                                    </span>
+                                    <span>@(_webSocketService.IsRunning ? "Stop" : "Start") Server</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="field column">
+                            <label class="label">Server Port</label>
+                            <div class="control is-expanded">
+                                <input class="input" type="number" placeholder="9876" @bind="_serverPort" min="1" max="65535">
+                            </div>
+                            <p class="help">This is the port for the "clients" to connect to.</p>
+                            <p class="help">If you change this, you either have to edit the clients or generate new ones</p>
+                            <p class="help">Default: <code>9876</code></p>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                        <div class="field column">
+                            <label class="label">Client Theme</label>
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <div class="select is-fullwidth">
+                                        <select @bind="_clientTheme">
+                                            @foreach (var client in GetWebSocketClients())
+                                            {
+                                                <option @key="client.Name" value="@client.Name">@client.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="control">
+                                    <button type="submit" class="button is-primary" @onclick="GenerateClient">Generate Client</button>
+                                </div>
+                            </div>
+                            <p class="help">The theme of the client to generate</p>
+                            <p>To use the client, just generate one you like, save it somewhere safe and add it as "Browser Source" to your Streaming Software</p>
+                            <p>To create a custom theme, you can generate one that goes into the right direction (or just as a template) and add your own HTML, CSS and JavaScript. You are in power and
+                                have
+                                full control!</p>
+                        </div>
+                        <div class="field column">
+                            <label class="label">Preview</label>
+                            @if (GetWebSocketClient(_clientTheme) is { } selectedClient)
+                            {
+                                <figure class="image p-2 has-background-dark">
+                                    <img src="@selectedClient.ImagePath" alt="@_clientTheme Preview"/>
+                                </figure>
+
+                                <p class="has-text-centered">Recommended Browser Source Ratio (width:height): <code>@selectedClient.Ratio</code></p>
+                            }
+                            else
+                            {
+                                <p class="help">No preview available</p>
+                            }
+                        </div>
+
+                    </div>
+
+                    <div class="columns">
+                        <div class="field column">
+                            <label class="label">Allow Audio Stream <small class=" is-size-7 has-text-danger">Requires Server Restart</small></label>
+                            <div class="control is-expanded">
+                                <Toggle @bind-Value="_allowAudioStream" OffLabel="Disabled" OnLabel="Enabled"/>
+                            </div>
+                            <p class="help">This allows the client to stream the audio from the server</p>
+                            <p class="help">Default: <code>Disabled</code></p>
+                        </div>
+
+                        <AudioDeviceSelection @bind-Value="_audioDeviceId"></AudioDeviceSelection>
+                    </div>
+                </div>
+            </div>
+            <footer class="card-footer">
+                <button class="button is-ghost card-footer-item" @onclick="() => ResetGlobalSettings()">Reset</button>
+                <button class="button is-ghost card-footer-item" @onclick="SaveGlobalSettings">Save</button>
+            </footer>
+        </div>
+    </TabPage>
+    <TabPage Text="Blacklist" Icon="list">
+        <div class="card mt-4 mb-4">
+            <div class="card-content">
+                <div class="content">
+                    <div class="columns">
+                        <div class="field column is-5">
+                            <label class="label">URL</label>
+                            <div class="control is-expanded">
+                                <input class="input" type="url" placeholder="https://youtube.com/watch?v=xvFZjo5PgG0" @bind="_blacklistUrl">
+                            </div>
+                        </div>
+
+                        <div class="field column is-5">
+                            <label class="label">Description</label>
+                            <div class="control is-expanded">
+                                <input class="input" type="text" placeholder="This is a test entry" @bind="_blacklistDescription">
+                                <p class="help">This is a description so you note why you blacklisted it</p>
+                            </div>
+                        </div>
+
+                        <div class="field column is-expanded">
+                            <label class="label">&nbsp;</label>
+
+                            <div class="control is-expanded">
+                                <button class="button is-primary is-fullwidth" @onclick="AddBlacklistEntry">
+                                    <span class="icon is-small"><i class="mat-icon">add</i></span>
+                                    <span>Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="table is-fullwidth">
+                        <thead>
+                        <tr>
+                            <th>Url</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var entry in _settingsService.GetAppSettings().Blacklist)
+                        {
+                            <tr @key="entry.Url">
+                                <td>@entry.Url</td>
+                                <td>@entry.Description</td>
+                                <td class="buttons">
+                                    <button class="button is-danger" @onclick="_ => RemoveBlacklistEntry(entry)"><span class="icon is-small"><i class="mat-icon">delete</i></span></button>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (_settingsService.GetAppSettings().Blacklist.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="3" class="has-text-centered">Never gonna blacklist you up!</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </TabPage>
+</TabControl>

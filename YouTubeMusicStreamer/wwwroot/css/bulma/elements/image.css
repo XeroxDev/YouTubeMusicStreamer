@@ -1,0 +1,253 @@
+.image {
+  display: block;
+  position: relative;
+}
+.image img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+.image img.is-rounded {
+  border-radius: var(--bulma-radius-rounded);
+}
+.image.is-fullwidth {
+  width: 100%;
+}
+.image.is-square img,
+.image.is-square .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-square {
+  aspect-ratio: 1;
+}
+.image.is-1by1 {
+  aspect-ratio: 1/1;
+}
+.image.is-1by1 img,
+.image.is-1by1 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-5by4 {
+  aspect-ratio: 5/4;
+}
+.image.is-5by4 img,
+.image.is-5by4 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-4by3 {
+  aspect-ratio: 4/3;
+}
+.image.is-4by3 img,
+.image.is-4by3 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-3by2 {
+  aspect-ratio: 3/2;
+}
+.image.is-3by2 img,
+.image.is-3by2 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-5by3 {
+  aspect-ratio: 5/3;
+}
+.image.is-5by3 img,
+.image.is-5by3 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-16by9 {
+  aspect-ratio: 16/9;
+}
+.image.is-16by9 img,
+.image.is-16by9 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-2by1 {
+  aspect-ratio: 2/1;
+}
+.image.is-2by1 img,
+.image.is-2by1 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-3by1 {
+  aspect-ratio: 3/1;
+}
+.image.is-3by1 img,
+.image.is-3by1 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-4by5 {
+  aspect-ratio: 4/5;
+}
+.image.is-4by5 img,
+.image.is-4by5 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-3by4 {
+  aspect-ratio: 3/4;
+}
+.image.is-3by4 img,
+.image.is-3by4 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-2by3 {
+  aspect-ratio: 2/3;
+}
+.image.is-2by3 img,
+.image.is-2by3 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-3by5 {
+  aspect-ratio: 3/5;
+}
+.image.is-3by5 img,
+.image.is-3by5 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-9by16 {
+  aspect-ratio: 9/16;
+}
+.image.is-9by16 img,
+.image.is-9by16 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-1by2 {
+  aspect-ratio: 1/2;
+}
+.image.is-1by2 img,
+.image.is-1by2 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-1by3 {
+  aspect-ratio: 1/3;
+}
+.image.is-1by3 img,
+.image.is-1by3 .has-ratio {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.image.is-16x16 {
+  height: 16px;
+  width: 16px;
+}
+.image.is-24x24 {
+  height: 24px;
+  width: 24px;
+}
+.image.is-32x32 {
+  height: 32px;
+  width: 32px;
+}
+.image.is-48x48 {
+  height: 48px;
+  width: 48px;
+}
+.image.is-64x64 {
+  height: 64px;
+  width: 64px;
+}
+.image.is-96x96 {
+  height: 96px;
+  width: 96px;
+}
+.image.is-128x128 {
+  height: 128px;
+  width: 128px;
+}
+
+/*# sourceMappingURL=image.css.map */

@@ -1,0 +1,47 @@
+<aside class="menu is-flex is-flex-direction-column is-justify-content-space-between" id="main-menu">
+    <ul class="menu-list">
+        <li>
+            <NavLink ActiveClass="is-active" href="/" Match="NavLinkMatch.All">
+                <span class="icon"><i class="mat-icon">link</i></span> <span>Connections</span>
+            </NavLink>
+        </li>
+        <li>
+            <NavLink ActiveClass="is-active" href="/twitch">
+                <span class="icon"><i class="brand-icon">twitch</i></span> <span>Twitch</span>
+            </NavLink>
+        </li>
+        <li>
+            <NavLink ActiveClass="is-active" href="/ytmdesktop">
+                <span class="icon"><i class="brand-icon">youtube</i></span> <span>YTMDesktop</span>
+            </NavLink>
+        </li>
+        <li>
+            <NavLink ActiveClass="is-active" href="/queue">
+                <span class="icon"><i class="mat-icon">list</i></span> <span>Queue</span>
+            </NavLink>
+        </li>
+        <li>
+            <NavLink ActiveClass="is-active" href="/logging">
+                <span class="icon"><i class="mat-icon">history</i></span> <span>Logging</span>
+            </NavLink>
+        </li>
+
+        @if (_isDebug)
+        {
+            <li>
+                <NavLink ActiveClass="is-active" href="/debug">
+                    <span class="icon"><i class="mat-icon">code</i></span> <span>Debug</span>
+                </NavLink>
+            </li>
+        }
+    </ul>
+
+    <ul class="menu-list">
+        <li>
+            <NavLink ActiveClass="is-active" href="/about">
+                <span class="icon"><i class="mat-icon">info</i></span> <span>About</span>
+            </NavLink>
+        </li>
+    </ul>
+
+</aside>
