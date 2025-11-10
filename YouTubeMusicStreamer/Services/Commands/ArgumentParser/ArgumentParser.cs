@@ -31,14 +31,14 @@ public partial class ArgumentParser : IArgumentParser
                 .Select(f => f.Text)
         ).Trim();
 
+        if (raw.StartsWith($"{prefix}{trigger}", StringComparison.OrdinalIgnoreCase))
+        {
+            raw = raw[$"{prefix}{trigger}".Length..].TrimStart();
+        }
+
         var tokens = TokenRegex().Matches(raw)
             .Select(m => m.Value.Trim('"'))
             .ToList();
-
-        if (tokens.FirstOrDefault()?.Equals(prefix, StringComparison.OrdinalIgnoreCase) == true)
-            tokens.RemoveAt(0);
-        if (tokens.FirstOrDefault()?.Equals(trigger, StringComparison.OrdinalIgnoreCase) == true)
-            tokens.RemoveAt(0);
 
         return tokens;
     }
