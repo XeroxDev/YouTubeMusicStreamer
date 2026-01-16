@@ -1,12 +1,5 @@
 # Changelog
 
-## [1.0.2](https://github.com/XeroxDev/YouTubeMusicStreamer/compare/v1.0.1...v1.0.2) (2026-01-16)
-
-
-### Bug Fixes
-
-* **commands:** use canonical YouTube watch URL for {url} placeholder ([75a6255](https://github.com/XeroxDev/YouTubeMusicStreamer/commit/75a62552b690b9534fc03af217008f7503e1f277))
-
 ## [1.0.1](https://github.com/XeroxDev/YouTubeMusicStreamer/compare/v1.0.0...v1.0.1) (2025-11-10)
 
 
