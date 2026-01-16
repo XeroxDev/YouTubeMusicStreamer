@@ -168,6 +168,8 @@
         <Error Condition="'$(NuGetLicenseExitCode)'!='0' AND '$(NuGetLicenseExitCode)'!='3'" Text="nuget-license failed with exit code $(NuGetLicenseExitCode)." />
 
         <ItemGroup>
+            <MauiAsset Remove="$(BaseIntermediateOutputPath)third-party-licenses.json" />
+            <MauiAsset Remove="$(BaseIntermediateOutputPath)ThirdPartyLicenses\**" />
             <MauiAsset Include="$(BaseIntermediateOutputPath)third-party-licenses.json" LogicalName="third-party-licenses.json">
                 <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             </MauiAsset>
