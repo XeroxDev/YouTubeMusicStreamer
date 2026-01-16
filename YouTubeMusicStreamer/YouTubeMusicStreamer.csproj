@@ -158,8 +158,22 @@
     </UsingTask>
 
     <Target Name="GenerateThirdPartyLicenses" BeforeTargets="BeforeBuild" Condition="'$(Configuration)'=='Release'">
-        <Exec Command="dotnet tool restore"/>
-        <Exec Command="dotnet tool run nuget-license -i $(ProjectDir)$(MSBuildProjectFile) -t -o JsonPretty -d $(ProjectDir)Resources\Raw\ThirdPartyLicenses\ -fo $(ProjectDir)Resources\Raw\third-party-licenses.json -override $(ProjectDir)license-override.json" IgnoreExitCode="true"/>
+        <MakeDir Directories="$(ProjectDir)Resources\Raw\ThirdPartyLicenses" />
+        <Exec Command="dotnet tool restore" />
+        <Exec Command="dotnet tool run nuget-license -i $(ProjectDir)$(MSBuildProjectFile) -t -o JsonPretty -d $(ProjectDir)Resources\Raw\ThirdPartyLicenses\ -fo $(ProjectDir)Resources\Raw\third-party-licenses.json -override $(ProjectDir)license-override.json" IgnoreExitCode="true">
+            <Output TaskParameter="ExitCode" PropertyName="NuGetLicenseExitCode" />
+        </Exec>
+        <Warning Condition="'$(NuGetLicenseExitCode)'=='3'" Text="nuget-license reported validation warnings; see generated files for details." />
+        <Error Condition="'$(NuGetLicenseExitCode)'!='0' AND '$(NuGetLicenseExitCode)'!='3'" Text="nuget-license failed with exit code $(NuGetLicenseExitCode)." />
+
+        <ItemGroup>
+            <MauiAsset Include="$(ProjectDir)Resources\Raw\third-party-licenses.json" LogicalName="third-party-licenses.json">
+                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            </MauiAsset>
+            <MauiAsset Include="$(ProjectDir)Resources\Raw\ThirdPartyLicenses\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)">
+                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            </MauiAsset>
+        </ItemGroup>
     </Target>
-    
+
 </Project>
