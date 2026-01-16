@@ -158,7 +158,7 @@
         </Task>
     </UsingTask>
 
-    <Target Name="GenerateThirdPartyLicenses" BeforeTargets="BeforeBuild" Condition="'$(Configuration)'=='Release'">
+    <Target Name="GenerateThirdPartyLicenses" BeforeTargets="PrepareForPublish" Condition="'$(Configuration)'=='Release'">
         <MakeDir Directories="$(BaseIntermediateOutputPath)ThirdPartyLicenses" />
         <Exec Command="dotnet tool restore" />
         <Exec Command="dotnet tool run nuget-license -i $(ProjectDir)$(MSBuildProjectFile) -t -o JsonPretty -d $(BaseIntermediateOutputPath)ThirdPartyLicenses\ -fo $(BaseIntermediateOutputPath)third-party-licenses.json -override $(ProjectDir)license-override.json" IgnoreExitCode="true">
