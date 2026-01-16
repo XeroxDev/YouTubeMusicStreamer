@@ -39,7 +39,7 @@
     <PropertyGroup>
         <VersionMajor>1</VersionMajor> <!-- x-release-please-major -->
         <VersionMinor>0</VersionMinor> <!-- x-release-please-minor -->
-        <VersionPatch>1</VersionPatch> <!-- x-release-please-patch -->
+        <VersionPatch>2</VersionPatch> <!-- x-release-please-patch -->
 
         <ApplicationDisplayVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)</ApplicationDisplayVersion>
         <ApplicationVersion>$(VersionMajor)$(VersionMinor.PadLeft(2, '0'))$(VersionPatch.PadLeft(2, '0'))</ApplicationVersion>
