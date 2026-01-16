@@ -170,7 +170,7 @@
             <MauiAsset Include="$(ProjectDir)Resources\Raw\third-party-licenses.json" LogicalName="third-party-licenses.json">
                 <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             </MauiAsset>
-            <MauiAsset Include="$(ProjectDir)Resources\Raw\ThirdPartyLicenses\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)">
+            <MauiAsset Include="$(ProjectDir)Resources\Raw\ThirdPartyLicenses\**" LogicalName="ThirdPartyLicenses\%(RecursiveDir)%(Filename)%(Extension)">
                 <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             </MauiAsset>
         </ItemGroup>
