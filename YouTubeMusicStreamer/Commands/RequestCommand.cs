@@ -73,7 +73,7 @@ public class RequestCommand(CommandBag bag) : CommandBase(bag)
             Title = embed?.Title ?? string.Empty,
             Author = embed?.AuthorName ?? string.Empty,
             Channel = embed?.AuthorUrl ?? string.Empty,
-            Url = embed?.Html ?? string.Empty
+            Url = $"https://www.youtube.com/watch?v={videoId}";
         });
     }
 
