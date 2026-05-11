@@ -16,22 +16,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using YouTubeMusicStreamer.Extensions;
-using YouTubeMusicStreamer.Models;
 using YouTubeMusicStreamer.Services;
 using YouTubeMusicStreamer.Services.App;
+using YouTubeMusicStreamer.Services.App.Persistence;
 using YouTubeMusicStreamer.Services.Commands;
-using TwitchService = YouTubeMusicStreamer.Services.Twitch.TwitchService;
-
+using YouTubeMusicStreamer.Services.Twitch;
 namespace YouTubeMusicStreamer.Components.Pages.Twitch;
 
-public partial class Twitch(SettingsService settingsService, TwitchService twitchService, CommandService commandService, IToastService toastService) : ComponentBase
+public partial class Twitch(TwitchSettingsPageFacade twitchSettingsPageFacade, IAppToastService toastService) : ComponentBase, IDisposable
 {
     #region Global Settings Properties
 
-    private string _twitchChatChannel = string.Empty;
     private bool _twitchSendMessageOnConnect;
     private string _twitchConnectMessage = string.Empty;
     private string _twitchCommandPrefix = string.Empty;
@@ -40,34 +37,42 @@ public partial class Twitch(SettingsService settingsService, TwitchService twitc
 
     #region Commands Properties
 
-    private readonly IEnumerable<CommandInformation> _commands = commandService.GetAllCommandsInfo();
+    private IReadOnlyList<CommandDescriptor> _commands = [];
 
     #endregion
 
     protected override void OnInitialized()
     {
-        ResetGlobalSettings(false);
+        twitchSettingsPageFacade.Initialize();
+        twitchSettingsPageFacade.StateChanged += OnFacadeStateChanged;
+        RefreshState(resetDraftSettings: true);
+    }
+
+    public void Dispose()
+    {
+        twitchSettingsPageFacade.StateChanged -= OnFacadeStateChanged;
+        twitchSettingsPageFacade.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task SaveGlobalSettings()
     {
-        await settingsService.SaveAppSettingAsync(s =>
-        {
-            s.TwitchChatChannel = _twitchChatChannel;
-            s.TwitchSendMessageOnConnect = _twitchSendMessageOnConnect;
-            s.TwitchConnectMessage = _twitchConnectMessage;
-            s.TwitchCommandPrefix = _twitchCommandPrefix;
-        });
+        await twitchSettingsPageFacade.SaveSettingsAsync(new TwitchSettingsSnapshot(
+            _twitchSendMessageOnConnect,
+            _twitchConnectMessage,
+            _twitchCommandPrefix,
+            twitchSettingsPageFacade.Settings.BroadcasterAccount,
+            twitchSettingsPageFacade.Settings.BotAccount));
 
         toastService.ShowSuccess("Settings saved successfully.");
     }
 
     private void ResetGlobalSettings(bool notify = true)
     {
-        _twitchChatChannel = settingsService.GetAppSettings().TwitchChatChannel.CoalesceEmpty(twitchService.Username);
-        _twitchSendMessageOnConnect = settingsService.GetAppSettings().TwitchSendMessageOnConnect;
-        _twitchConnectMessage = settingsService.GetAppSettings().TwitchConnectMessage;
-        _twitchCommandPrefix = settingsService.GetAppSettings().TwitchCommandPrefix;
+        var settings = twitchSettingsPageFacade.Settings;
+        _twitchSendMessageOnConnect = settings.SendMessageOnConnect;
+        _twitchConnectMessage = settings.ConnectMessage;
+        _twitchCommandPrefix = settings.CommandPrefix;
 
         if (notify)
         {
@@ -80,4 +85,23 @@ public partial class Twitch(SettingsService settingsService, TwitchService twitc
     private static string ToDataAttribute(string value) => value.ToLowerInvariant().Replace(" ", "-");
 
     private static IEnumerable<KeyValuePair<string, object>> CommandDataAttribute(string command) => [new KeyValuePair<string, object>($"data-collapse-{ToDataAttribute(command)}", "closed")];
+
+    private void OnFacadeStateChanged(object? sender, EventArgs e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            RefreshState();
+            StateHasChanged();
+        });
+    }
+
+    private void RefreshState(bool resetDraftSettings = false)
+    {
+        _commands = twitchSettingsPageFacade.Commands;
+
+        if (resetDraftSettings)
+        {
+            ResetGlobalSettings(false);
+        }
+    }
 }

@@ -20,20 +20,24 @@ namespace YouTubeMusicStreamer.Extensions;
 
 public static class TaskExtensions
 {
+    private static Exception GetTaskException(Task task) =>
+        task.Exception?.InnerException
+        ?? (Exception?)task.Exception
+        ?? new InvalidOperationException("Task faulted without exception details.");
+
     public static void FireAndForget(this Task task, Action<Exception>? onError = null)
     {
         if (task.IsCompleted)
         {
             if (task.IsFaulted)
             {
-                // Invoke the error callback immediately for faulted tasks
-                onError?.Invoke(task.Exception ?? new Exception("Task faulted without exception details."));
+                onError?.Invoke(GetTaskException(task));
             }
 
             return;
         }
 
-        task.ContinueWith(t => onError?.Invoke(t.Exception ?? new Exception("Task faulted without exception details.")),
+        task.ContinueWith(t => onError?.Invoke(GetTaskException(t)),
             TaskContinuationOptions.OnlyOnFaulted);
     }
 
@@ -43,8 +47,7 @@ public static class TaskExtensions
         {
             if (task.IsFaulted)
             {
-                // Invoke the error callback immediately for faulted tasks
-                onError?.Invoke(task.Exception ?? new Exception("Task faulted without exception details."));
+                onError?.Invoke(GetTaskException(task));
             }
             else
             {
@@ -58,7 +61,7 @@ public static class TaskExtensions
         {
             if (t.IsFaulted)
             {
-                onError?.Invoke(t.Exception ?? new Exception("Task faulted without exception details."));
+                onError?.Invoke(GetTaskException(t));
             }
             else
             {

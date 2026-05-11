@@ -18,11 +18,13 @@
 
 namespace YouTubeMusicStreamer.Services.Commands.Cooldowns;
 
+using YouTubeMusicStreamer.Services.App.Persistence;
+
 public interface ICooldownManager
 {
     /// <summary>
     ///  Returns true if the command may run now; otherwise false + how many
     ///  seconds the user must still wait.
     /// </summary>
-    bool TryStart(string key, uint cooldownSeconds, out int waitSeconds);
+    bool TryStart(string commandKey, string executorUserId, CommandCooldownScope cooldownScope, uint cooldownSeconds, out int waitSeconds);
 }

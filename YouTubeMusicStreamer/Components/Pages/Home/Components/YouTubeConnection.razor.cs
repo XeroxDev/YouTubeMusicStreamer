@@ -19,6 +19,7 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Components;
 using YouTubeService = YouTubeMusicStreamer.Services.YouTube.YouTubeService;
+using YouTubeMusicStreamer.Services.YouTube;
 
 namespace YouTubeMusicStreamer.Components.Pages.Home.Components;
 
@@ -44,18 +45,43 @@ public partial class YouTubeConnection : ComponentBase, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private async void OnYouTubeServiceOnPropertyChanged(object? o, PropertyChangedEventArgs propertyChangedEventArgs)
+    private void OnYouTubeServiceOnPropertyChanged(object? o, PropertyChangedEventArgs propertyChangedEventArgs)
     {
-        try
-        {
-            if (_disposed) return;
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (Exception)
-        {
-            // ignore
-        }
+        if (_disposed)
+            return;
+
+        _ = InvokeAsync(StateHasChanged);
     }
 
-    private async Task ConnectAsync() => await YouTubeService.SetAddressAsync(_host, _port);
+    private async Task ConnectAsync()
+    {
+        var currentHost = YouTubeService.GetValidatedHost();
+        var currentPort = YouTubeService.GetValidatedPort();
+        var canReconnect = YouTubeConnectionViewState.ShouldReconnect(
+            _host,
+            _port,
+            currentHost,
+            currentPort,
+            YouTubeService.SessionState.AuthorizationStatus);
+
+        if (canReconnect)
+        {
+            await YouTubeService.ReconnectAsync();
+            return;
+        }
+
+        await YouTubeService.SetAddressAsync(_host, _port);
+    }
+
+    private string EndpointStatusLabel => YouTubeConnectionViewState.GetEndpointStatusLabel(YouTubeService.SessionState.EndpointStatus);
+
+    private string EndpointStatusTagClass => YouTubeConnectionViewState.GetEndpointStatusTagClass(YouTubeService.SessionState.EndpointStatus);
+
+    private string AuthorizationStatusLabel => YouTubeConnectionViewState.GetAuthorizationStatusLabel(YouTubeService.SessionState.AuthorizationStatus);
+
+    private string AuthorizationStatusTagClass => YouTubeConnectionViewState.GetAuthorizationStatusTagClass(YouTubeService.SessionState.AuthorizationStatus);
+
+    private string ConnectionStatusLabel => YouTubeConnectionViewState.GetConnectionStatusLabel(YouTubeService.SessionState.ConnectionStatus);
+
+    private string ConnectionStatusTagClass => YouTubeConnectionViewState.GetConnectionStatusTagClass(YouTubeService.SessionState.ConnectionStatus);
 }

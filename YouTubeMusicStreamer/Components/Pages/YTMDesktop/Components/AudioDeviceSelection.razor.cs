@@ -20,13 +20,14 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using YouTubeMusicStreamer.Services;
 using YouTubeMusicStreamer.Services.App;
-using AudioService = YouTubeMusicStreamer.Services.App.AudioService;
 
 namespace YouTubeMusicStreamer.Components.Pages.YTMDesktop.Components;
 
 public partial class AudioDeviceSelection
 {
-    private List<AudioDeviceInfo> _audioDevices = AudioService.GetDevices();
+    [Inject] private IAudioDeviceProvider AudioDeviceProvider { get; set; } = null!;
+
+    private IReadOnlyList<AudioDeviceInfo> _audioDevices = [];
     private bool _refreshing;
 
     private string _value = string.Empty;
@@ -48,11 +49,22 @@ public partial class AudioDeviceSelection
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public Expression<Func<string>>? ValueExpression { get; set; }
 
+    protected override void OnInitialized()
+    {
+        _audioDevices = AudioDeviceProvider.GetDevices();
+    }
+
     private async Task ReloadAudioDevices()
     {
         _refreshing = true;
-        await Task.Run(() => _audioDevices = AudioService.GetDevices(true));
-        await Task.Delay(100);
-        _refreshing = false;
+
+        try
+        {
+            _audioDevices = AudioDeviceProvider.GetDevices(true);
+        }
+        finally
+        {
+            _refreshing = false;
+        }
     }
 }

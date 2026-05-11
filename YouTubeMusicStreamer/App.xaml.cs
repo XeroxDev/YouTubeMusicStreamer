@@ -1,4 +1,4 @@
-﻿// This file is part of YouTubeMusicStreamer.
+// This file is part of YouTubeMusicStreamer.
 // Copyright (C) 2025 Dominic Ris
 // 
 // YouTubeMusicStreamer is free software: you can redistribute it and/or modify
@@ -17,86 +17,31 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Windows.AppLifecycle;
-using WinRT.Interop;
-using YouTubeMusicStreamer.Services;
-using YouTubeMusicStreamer.Services.App;
-using YouTubeMusicStreamer.Services.Commands;
+using YouTubeMusicStreamer.Services.Startup;
 using YouTubeMusicStreamer.Utils;
-using AudioService = YouTubeMusicStreamer.Services.App.AudioService;
-using WebSocketService = YouTubeMusicStreamer.Services.WebSocket.WebSocketService;
 
 namespace YouTubeMusicStreamer;
 
 public partial class App
 {
     private readonly ILogger<App> _logger;
-    private readonly CommandService _commandService;
-    private readonly SettingsService _settingsService;
-    private readonly WebSocketService _webSocketService;
+    private readonly IStartupCoordinator _startupCoordinator;
 
-    public App(ILogger<App> logger, CommandService commandService, SettingsService settingsService, WebSocketService webSocketService)
+    public App(ILogger<App> logger, IStartupCoordinator startupCoordinator)
     {
         _logger = logger;
-        _commandService = commandService;
-        _settingsService = settingsService;
-        _webSocketService = webSocketService;
+        _startupCoordinator = startupCoordinator;
         logger.LogInformation("Initializing App");
 
         InitializeComponent();
-
-        if (MainThread.IsMainThread)
-        {
-            MainThreadInitializer();
-        }
-        else
-        {
-            MainThread.BeginInvokeOnMainThread(MainThreadInitializer);
-        }
+        _startupCoordinator.InitializePrimaryInstanceInfrastructure();
 
         logger.LogInformation("App initialized");
     }
 
-    private void MainThreadInitializer()
-    {
-        _logger.LogInformation("Initializing MainThread");
-        
-        AppInstance.GetCurrent().Activated += (_, args) =>
-        {
-            try
-            {
-                var mauiWindow = Current?.Windows[0];
-                if (mauiWindow?.Handler?.PlatformView is not Microsoft.UI.Xaml.Window winUiWindow)
-                {
-                    _logger.LogError("Unable to get WinUI Window for activation");
-                    return;
-                }
-
-                var hWnd = WindowNative.GetWindowHandle(winUiWindow);
-
-                NativeMethods.ShowWindowAsync(hWnd, NativeMethods.SwRestore);
-                NativeMethods.SetForegroundWindow(hWnd);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while activating app instance");
-            }
-        };
-
-        foreach (var (trigger, description, isEnabled) in _commandService.ListCommands())
-        {
-            _logger.LogInformation("Found command: {Trigger} - {Description} | Enabled: {IsEnabled}", trigger, description, isEnabled);
-        }
-
-        AudioService.GetDevices();
-
-        if (_settingsService.GetAppSettings().AutoStartServer)
-            _ = _webSocketService.StartAsync();
-    }
-
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new MainPage())
+        var window = new Window(new MainPage())
         {
             Title = AppInfo.Current.Name,
             MinimumHeight = 500,
@@ -104,5 +49,9 @@ public partial class App
             Width = 1100,
             Height = 600
         };
+
+        window.Destroying += (_, _) => _startupCoordinator.OnWindowDestroying();
+        _startupCoordinator.OnWindowCreated(window);
+        return window;
     }
 }

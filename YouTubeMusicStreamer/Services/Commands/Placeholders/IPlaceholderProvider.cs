@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using YouTubeMusicStreamer.Interfaces;
+using System.Reflection;
 
 namespace YouTubeMusicStreamer.Services.Commands.Placeholders;
 
@@ -25,5 +25,5 @@ public interface IPlaceholderProvider
     /// <summary>
     /// Returns a map of {placeholder}→description for this handler.
     /// </summary>
-    IReadOnlyDictionary<string, string> GetPlaceholders(ICommand handler);
+    IReadOnlyDictionary<string, string> GetPlaceholders(Type commandType, MethodInfo method);
 }

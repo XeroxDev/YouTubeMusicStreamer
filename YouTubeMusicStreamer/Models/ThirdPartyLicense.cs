@@ -25,9 +25,10 @@ public record ThirdPartyLicense(
     [property: JsonPropertyName("PackageId")] string PackageId,
     [property: JsonPropertyName("PackageVersion")] string PackageVersion,
     [property: JsonPropertyName("Authors")] string? Authors,
-    [property: JsonPropertyName("License")] string? License,
-    [property: JsonPropertyName("LicenseUrl")] string LicenseUrl,
-    [property: JsonPropertyName("LicenseInformationOrigin")] int LicenseInformationOrigin,
+    [property: JsonPropertyName("LicenseDisplayName")] string LicenseDisplayName,
+    [property: JsonPropertyName("LicenseSource")] string LicenseSource,
+    [property: JsonPropertyName("LocalLicensePath")] string? LocalLicensePath,
+    [property: JsonPropertyName("OnlineLicenseUrl")] string? OnlineLicenseUrl,
     [property: JsonPropertyName("PackageProjectUrl")] string? PackageProjectUrl,
     [property: JsonPropertyName("Copyright")] string? Copyright,
     [property: JsonPropertyName("ValidationErrors")] IReadOnlyList<ValidationError> ValidationErrors

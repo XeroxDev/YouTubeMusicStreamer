@@ -1,98 +1,86 @@
 ﻿@using YouTubeMusicStreamer.Enums
+@using YouTubeMusicStreamer.Services.YouTube
 <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
-
-    @if (YouTubeService.State == ConnectorState.Loading)
-    {
-        <div class="has-text-centered">
-            <h3>Loading...</h3>
-            <h1 class="mat-icon mt-4 a-rotate">progress_activity</h1>
-        </div>
-    }
-    else
-    {
-        @if (YouTubeService.State == ConnectorState.LoggedIn)
-        {
-            <h4 class="has-text-centered has-text-success">Connected to YTMDesktop</h4>
-        }
-        else
-        {
-            <h4 class="has-text-centered">Not connected to YTMDesktop</h4>
-        }
-
-        <form class="mt-4">
-            <div class="field is-horizontal">
-                <div class="field-body">
-                    <div class="field">
-                        <p class="control is-expanded has-icons-left">
-                            <input type="text" class="input" placeholder="127.0.0.1" @bind="_host"/>
-                            <span class="icon is-small is-left">
-                                <i class="mat-icon">dns</i>
-                            </span>
-                        </p>
-                        <p class="help">The host where YTMDesktop is running, usually it's 127.0.0.1</p>
-                    </div>
-                    <div class="field">
-                        <p class="control is-expanded has-icons-left">
-                            <input type="number" class="input" placeholder="9863" @bind="_port"/>
-                            <span class="icon is-small is-left">
-                                <i class="mat-icon">settings_input_hdmi</i>
-                            </span>
-                        </p>
-                        <p class="help">The port where YTMDesktop is running, usually it's 9863</p>
-                    </div>
+    <form class="mt-4 is-fullwidth">
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field">
+                    <p class="control is-expanded has-icons-left">
+                        <input type="text" class="input" placeholder="127.0.0.1" @bind="_host"/>
+                        <span class="icon is-small is-left">
+                            <i class="mat-icon">dns</i>
+                        </span>
+                    </p>
+                    <p class="help">The host where YTMDesktop is running, usually it's 127.0.0.1</p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded has-icons-left">
+                        <input type="number" class="input" placeholder="9863" @bind="_port"/>
+                        <span class="icon is-small is-left">
+                            <i class="mat-icon">settings_input_hdmi</i>
+                        </span>
+                    </p>
+                    <p class="help">The port where YTMDesktop is running, usually it's 9863</p>
                 </div>
             </div>
-        </form>
+        </div>
+    </form>
 
-        <button @onclick="ConnectAsync" class="button has-background-youtube mt-4 mb-4" disabled="@(YouTubeService.State == ConnectorState.LoggingIn)">
-            @if (YouTubeService.State != ConnectorState.LoggingIn)
+    <div class="is-flex is-fullwidth is-justify-content-space-between is-align-items-flex-start mt-2 mb-2" style="gap: 1.25rem;">
+        <div class="field is-flex-grow-1" style="min-width: 0;">
+            <label class="label" style="white-space: nowrap;">Endpoint</label>
+            <span class="@EndpointStatusTagClass">@EndpointStatusLabel</span>
+        </div>
+        <div class="field is-flex-grow-1" style="min-width: 0;">
+            <label class="label" style="white-space: nowrap;">Authorization</label>
+            <span class="@AuthorizationStatusTagClass">@AuthorizationStatusLabel</span>
+        </div>
+        <div class="field is-flex-grow-1" style="min-width: 0;">
+            <label class="label" style="white-space: nowrap;">Live Connection</label>
+            <span class="@ConnectionStatusTagClass">@ConnectionStatusLabel</span>
+        </div>
+    </div>
+
+    <button @onclick="ConnectAsync" class="button has-background-youtube mt-4 mb-4" disabled="@(YouTubeService.State == ConnectorState.LoggingIn)">
+        @if (YouTubeService.State != ConnectorState.LoggingIn)
+        {
+            <span class="icon is-small">
+                <i class="mat-icon">link</i>
+            </span>
+            @if (YouTubeService.State == ConnectorState.LoggedIn)
             {
-                <span class="icon is-small">
-                    <i class="mat-icon">link</i>
-                </span>
-                @if (YouTubeService.State == ConnectorState.LoggedIn)
-                {
-                    <span>Reconnect</span>
-                }
-                else
-                {
-                    <span>Connect</span>
-                }
+                <span>Reconnect</span>
             }
             else
             {
-                <span class="icon is-small">
-                    <i class="mat-icon a-rotate">progress_activity</i>
-                </span>
-                <span>Connecting...</span>
+                <span>Connect</span>
             }
-        </button>
-
-        @switch (YouTubeService.State)
-        {
-            case ConnectorState.LoggingIn:
-                @if (!string.IsNullOrEmpty(YouTubeService.Code))
-                {
-                    <div class="notification is-info has-text-white">
-                        <p><strong>Info</strong></p>
-                        <p>Compare the following code with the one shown by YTMDesktop</p>
-                        <p class="is-2">@YouTubeService.Code</p>
-                    </div>
-                }
-
-                break;
-            case ConnectorState.Error:
-                <div class="notification is-danger has-text-white">
-                    <p><strong>Error</strong></p>
-                    <p>@YouTubeService.Error</p>
-                </div>
-                break;
-            case ConnectorState.Loading:
-            case ConnectorState.LoggedOut:
-            case ConnectorState.LoggedIn:
-            default:
-                break;
         }
+        else
+        {
+            <span class="icon is-small">
+                <i class="mat-icon a-rotate">progress_activity</i>
+            </span>
+            <span>Connecting...</span>
+        }
+    </button>
+
+    @if (YouTubeService.State == ConnectorState.LoggingIn && !string.IsNullOrEmpty(YouTubeService.Code))
+    {
+        <div class="box is-fullwidth mt-2">
+            <p class="label mb-2">Authorization Code</p>
+            <p class="help mb-3">Compare this code with the one shown by YTMDesktop.</p>
+            <div class="is-flex is-justify-content-center">
+                <span class="tag is-info is-medium px-5 py-4" style="font-family: monospace; font-size: 1.5rem; letter-spacing: 0.15em;">@YouTubeService.Code</span>
+            </div>
+        </div>
     }
 
+    @if (!string.IsNullOrWhiteSpace(YouTubeService.Error) && YouTubeService.SessionState.ConnectionStatus != YtmConnectionStatus.Connected)
+    {
+        <div class="notification is-danger has-text-white">
+            <p><strong>Error</strong></p>
+            <p>@YouTubeService.Error</p>
+        </div>
+    }
 </div>

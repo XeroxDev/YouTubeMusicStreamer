@@ -2,60 +2,47 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using Windows.Data.Html;
-using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using YouTubeMusicStreamer.Services;
 using YouTubeMusicStreamer.Services.App;
-using YouTubeMusicStreamer.Utils;
+using YouTubeMusicStreamer.Services.App.Diagnostics;
+using YouTubeMusicStreamer.Services.App.Persistence;
 
 namespace YouTubeMusicStreamer.Components.Pages.Logging;
 
-public partial class Logging(SettingsService settingsService, IToastService toastService, ILogger<Logging> logger) : ComponentBase, IDisposable
+public partial class Logging(LogViewerFacade logViewerFacade, IAppToastService toastService) : ComponentBase, IDisposable
 {
     private LogLevel _logLevel;
     private List<string> _logLines = [];
-    private FileSystemWatcher? _fileSystemWatcher;
+    private List<AppDiagnostic> _recentDiagnostics = [];
+    private List<SubsystemHealthSummary> _healthSummaries = [];
+    private readonly HashSet<Guid> _expandedDiagnostics = [];
     private bool _colorlessMode = false;
 
     protected override void OnInitialized()
     {
-        ResetGlobalSettings(false);
-        _ = Task.Run(() =>
-        {
-            var logFile = Path.Combine(AppUtils.LogFolder, AppUtils.CurrentLogFile);
-            SetLogLines(GetLogLines(logFile));
-
-            _fileSystemWatcher = new FileSystemWatcher
-            {
-                Path = AppUtils.LogFolder,
-                Filter = AppUtils.CurrentLogFile,
-                NotifyFilter = NotifyFilters.LastWrite,
-                EnableRaisingEvents = true
-            };
-
-            _fileSystemWatcher.Changed += OnFileSystemWatcherOnChanged;
-        });
+        logViewerFacade.Initialize();
+        logViewerFacade.StateChanged += OnFacadeStateChanged;
+        RefreshState(resetDraftSettings: true);
     }
 
-    private void OnFileSystemWatcherOnChanged(object sender, FileSystemEventArgs args) => SetLogLines(GetLogLines(args.FullPath));
-
-    private void SetLogLines(List<string>? lines)
+    private void OnFacadeStateChanged(object? sender, EventArgs e)
     {
-        _logLines = lines?.TakeLast(100).ToList() ?? [];
-        InvokeAsync(StateHasChanged);
+        RefreshState();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private async Task SaveGlobalSettings()
     {
-        await settingsService.SaveAppSettingAsync(s => { s.LogLevel = _logLevel; });
+        await logViewerFacade.SaveConfigurationAsync(new AppConfigurationSnapshot(_logLevel));
 
         toastService.ShowSuccess("Settings saved successfully.");
     }
 
     private void ResetGlobalSettings(bool notify = true)
     {
-        _logLevel = settingsService.GetAppSettings().LogLevel;
+        _logLevel = logViewerFacade.Configuration.LogLevel;
 
         if (notify)
         {
@@ -65,48 +52,13 @@ public partial class Logging(SettingsService settingsService, IToastService toas
 
     private static List<string> GetLogLevels() => Enum.GetValues<LogLevel>().Select(l => l.ToString()).ToList();
 
-    private static void OpenLogFolder()
-    {
-        var logPath = Path.Combine(AppUtils.FilePath, "Logs");
-        Process.Start(new ProcessStartInfo("explorer.exe", logPath));
-    }
-
-    private List<string> GetLogLines(string fullPath)
-    {
-        if (!File.Exists(fullPath))
-        {
-            return [];
-        }
-
-        var lines = new List<string>();
-        try
-        {
-            using var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var streamReader = new StreamReader(fileStream);
-
-            while (streamReader.ReadLine() is { } line)
-            {
-                lines.Add(line);
-            }
-
-            streamReader.Close();
-            fileStream.Close();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to read log file");
-        }
-
-        return lines;
-    }
-
     public static string PrettyLine(string line, bool colorlessMode)
     {
         line = line.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
         line = line.Replace("<", "&lt;", StringComparison.OrdinalIgnoreCase);
         line = line.Replace(">", "&gt;", StringComparison.OrdinalIgnoreCase);
         // Remove the app name prefix if it exists.
-        line = line.Replace($"{AppUtils.AppName}.", "", StringComparison.OrdinalIgnoreCase);
+        line = line.Replace($"{AssemblyAppIdentitySource.DefaultAppName}.", "", StringComparison.OrdinalIgnoreCase);
 
         if (colorlessMode)
         {
@@ -187,9 +139,47 @@ public partial class Logging(SettingsService settingsService, IToastService toas
 
     public void Dispose()
     {
-        _fileSystemWatcher?.Dispose();
+        logViewerFacade.StateChanged -= OnFacadeStateChanged;
+        logViewerFacade.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    private void OpenLogFolder() => logViewerFacade.OpenLogFolder();
+
+    private async Task CopyDiagnosticsSummary()
+    {
+        await logViewerFacade.CopyDiagnosticsSummaryAsync();
+        toastService.ShowSuccess("Diagnostics summary copied to clipboard.");
+    }
+
+    private async Task ClearDiagnostics()
+    {
+        await logViewerFacade.ClearDiagnosticsAsync();
+        toastService.ShowSuccess("Diagnostics cleared.");
+    }
+
+    private void RefreshState(bool resetDraftSettings = false)
+    {
+        _logLines = logViewerFacade.LogLines.ToList();
+        _recentDiagnostics = logViewerFacade.RecentDiagnostics.ToList();
+        _healthSummaries = logViewerFacade.HealthSummaries.ToList();
+        _expandedDiagnostics.RemoveWhere(diagnosticId => _recentDiagnostics.All(diagnostic => diagnostic.Id != diagnosticId));
+
+        if (resetDraftSettings)
+        {
+            ResetGlobalSettings(false);
+        }
+    }
+
+    private void ToggleDiagnosticExpansion(Guid diagnosticId)
+    {
+        if (!_expandedDiagnostics.Add(diagnosticId))
+        {
+            _expandedDiagnostics.Remove(diagnosticId);
+        }
+    }
+
+    private bool IsDiagnosticExpanded(Guid diagnosticId) => _expandedDiagnostics.Contains(diagnosticId);
 
     #region Regex
 

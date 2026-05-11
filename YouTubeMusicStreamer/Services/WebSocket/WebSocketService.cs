@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using YouTubeMusicStreamer.Services.App;
+using YouTubeMusicStreamer.Services.App.Persistence;
 
 namespace YouTubeMusicStreamer.Services.WebSocket;
 
@@ -30,48 +30,111 @@ public enum SocketEvents
     AudioInfo
 }
 
-public partial class WebSocketService(SettingsService settingsService, AudioService audioService) : IDisposable
+public partial class WebSocketService(
+    SettingsService settingsService,
+    IAudioCaptureService audioService,
+    IWidgetServerHost widgetServerHost,
+    IAsyncDelay delay) : IWidgetServerController, IDisposable
 {
-    private readonly HttpListener _listener = new();
+    private const int SilenceFrameSampleCount = 1024;
     private CancellationTokenSource? _cts;
-    private readonly List<System.Net.WebSockets.WebSocket> _clients = [];
+    private Task? _acceptLoopTask;
+    private readonly List<IWidgetClientConnection> _clients = [];
+    private string? _listenerPrefix;
+    private object? _latestTrackInfo;
+    private WidgetServerConfiguration _configuration = new(
+        settingsService.GetYouTubeSettings().PublicPort,
+        settingsService.GetYouTubeSettings().AllowAudioCapture,
+        settingsService.GetYouTubeSettings().AudioCaptureDevice);
 
-    public bool IsRunning => _listener.IsListening;
+    public WidgetServerState State { get; private set; } = new(
+        new WidgetServerConfiguration(
+            settingsService.GetYouTubeSettings().PublicPort,
+            settingsService.GetYouTubeSettings().AllowAudioCapture,
+            settingsService.GetYouTubeSettings().AudioCaptureDevice),
+        WidgetServerStatus.Stopped,
+        0,
+        null,
+        audioService.State,
+        null);
+
+    public event EventHandler<WidgetServerState> StateChanged = delegate { };
+
+    public bool IsRunning => widgetServerHost.IsListening;
 
     public async Task StartAsync()
     {
-        if (_listener.IsListening)
+        if (widgetServerHost.IsListening)
             return;
 
-        // Prevent multiple additions if restarted
-        var prefix = $"http://localhost:{settingsService.GetAppSettings().PublicPort}/";
-        if (!_listener.Prefixes.Contains(prefix))
-            _listener.Prefixes.Add(prefix);
+        var savedSettings = settingsService.GetYouTubeSettings();
+        await StartAsync(new WidgetServerConfiguration(
+            savedSettings.PublicPort,
+            savedSettings.AllowAudioCapture,
+            savedSettings.AudioCaptureDevice));
+    }
+
+    private async Task StartAsync(WidgetServerConfiguration configuration)
+    {
+        if (widgetServerHost.IsListening)
+            return;
+
+        _configuration = configuration;
+        UpdateState(State with
+        {
+            Configuration = _configuration,
+            AudioState = audioService.State,
+            ErrorMessage = null
+        });
+
+        UpdateState(State with { Status = WidgetServerStatus.Starting, ErrorMessage = null });
+        _listenerPrefix = $"http://localhost:{_configuration.Port}/";
 
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
-        _listener.Start();
+        widgetServerHost.Start(_listenerPrefix);
 
         audioService.DataAvailable += BroadcastAudioData;
         audioService.AudioInfoChanged += BroadcastAudioInfo;
+        audioService.StateChanged += HandleAudioStateChanged;
+        await audioService.ApplyConfigurationAsync(_configuration.AudioEnabled, _configuration.AudioDeviceId, _cts.Token);
 
-        if (settingsService.GetAppSettings().AllowAudioCapture)
+        _acceptLoopTask = Task.Run(() => AcceptLoopAsync(_cts.Token), _cts.Token);
+        UpdateState(State with { Status = ComputeStatus(IsRunning, audioService.State, null) });
+    }
+
+    public async Task ApplyConfigurationAsync(YouTubeSettingsSnapshot settings, CancellationToken cancellationToken = default)
+    {
+        var nextConfiguration = new WidgetServerConfiguration(
+            settings.PublicPort,
+            settings.AllowAudioCapture,
+            settings.AudioCaptureDevice);
+
+        var portChanged = nextConfiguration.Port != _configuration.Port;
+        _configuration = nextConfiguration;
+        UpdateState(State with { Configuration = _configuration, ErrorMessage = null });
+
+        if (IsRunning && portChanged)
         {
-            var device = settingsService.GetAppSettings().AudioCaptureDevice;
-            if (!string.IsNullOrWhiteSpace(device))
-            {
-                audioService.StartCapture(device);
-            }
+            Stop();
+            await StartAsync(nextConfiguration);
+            return;
         }
 
-        while (!_cts.IsCancellationRequested)
+        await audioService.ApplyConfigurationAsync(_configuration.AudioEnabled, _configuration.AudioDeviceId, cancellationToken);
+        UpdateState(State with { Status = ComputeStatus(IsRunning, audioService.State, State.ErrorMessage) });
+    }
+
+    private async Task AcceptLoopAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
         {
-            HttpListenerContext? context;
+            IWidgetServerRequest? request;
             try
             {
-                context = await _listener.GetContextAsync();
+                request = await widgetServerHost.AcceptAsync(cancellationToken);
             }
-            catch (HttpListenerException)
+            catch (OperationCanceledException)
             {
                 break;
             }
@@ -80,14 +143,14 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
                 break;
             }
 
-            if (context.Request.IsWebSocketRequest)
+            if (request.IsWebSocketRequest)
             {
-                var wsContext = await context.AcceptWebSocketAsync(null);
-                var client = wsContext.WebSocket;
+                var client = await request.AcceptWebSocketAsync(cancellationToken);
 
                 lock (_clients)
                 {
                     _clients.Add(client);
+                    UpdateState(State with { ConnectedClients = _clients.Count });
                 }
 
                 _ = Task.Run(() => MonitorClientAsync(client));
@@ -95,13 +158,12 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
             }
             else
             {
-                context.Response.StatusCode = 400;
-                context.Response.Close();
+                request.RejectBadRequest();
             }
         }
     }
 
-    private async Task MonitorClientAsync(System.Net.WebSockets.WebSocket client)
+    private async Task MonitorClientAsync(IWidgetClientConnection client)
     {
         var buffer = new byte[1024];
         try
@@ -122,6 +184,7 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
         lock (_clients)
         {
             _clients.Remove(client);
+            UpdateState(State with { ConnectedClients = _clients.Count });
         }
 
         try
@@ -134,12 +197,15 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
         }
     }
 
-    private async Task OnClientConnectMessage(System.Net.WebSockets.WebSocket client)
+    private async Task OnClientConnectMessage(IWidgetClientConnection client)
     {
         if (_cts?.Token is null) return;
 
         if (audioService.CurrentAudioInfo is { } audioInfo)
-            await client.SendAsync(CreateJsonMessage(SocketEvents.AudioInfo, audioInfo), WebSocketMessageType.Text, true, _cts.Token);
+            await client.SendAsync(CreateJsonMessage(SocketEvents.AudioInfo, audioInfo), WebSocketMessageType.Text, _cts.Token);
+
+        if (_latestTrackInfo is not null)
+            await client.SendAsync(CreateJsonMessage(SocketEvents.TrackInfo, _latestTrackInfo), WebSocketMessageType.Text, _cts.Token);
     }
 
     private static byte[] CreateJsonMessage(SocketEvents socketEvent, object message)
@@ -159,9 +225,16 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
     public async Task BroadcastMessageAsync(SocketEvents socketEvent, object message, CancellationToken token = default) =>
         await BroadcastMessageAsync(CreateJsonMessage(socketEvent, message), WebSocketMessageType.Text, token);
 
+    public async Task BroadcastTrackInfoAsync(object message, CancellationToken token = default)
+    {
+        _latestTrackInfo = message;
+        UpdateState(State with { LastTrackInfo = message });
+        await BroadcastMessageAsync(SocketEvents.TrackInfo, message, token);
+    }
+
     private async Task BroadcastMessageAsync(byte[] data, WebSocketMessageType messageType, CancellationToken token = default)
     {
-        List<System.Net.WebSockets.WebSocket> clientsCopy;
+        List<IWidgetClientConnection> clientsCopy;
         lock (_clients)
         {
             clientsCopy = _clients.ToList();
@@ -171,7 +244,7 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
         {
             try
             {
-                await client.SendAsync(new ArraySegment<byte>(data), messageType, true, token);
+                await client.SendAsync(data, messageType, token);
             }
             catch
             {
@@ -215,7 +288,7 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
             }
 
             // Wait for ~33ms (about 30Hz)
-            await Task.Delay(33);
+            await delay.DelayAsync(TimeSpan.FromMilliseconds(33));
 
             lock (_audioLock)
             {
@@ -232,20 +305,46 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
         _ = BroadcastMessageAsync(SocketEvents.AudioInfo, e);
     }
 
+    private void HandleAudioStateChanged(object? sender, AudioSubsystemState audioState)
+    {
+        var previousAudioState = State.AudioState;
+        UpdateState(State with
+        {
+            AudioState = audioState,
+            Status = ComputeStatus(IsRunning, audioState, State.ErrorMessage)
+        });
+
+        if (audioState.Status != AudioCaptureStatus.Capturing &&
+            (previousAudioState.Status == AudioCaptureStatus.Capturing || HasBufferedAudioData()))
+        {
+            _ = BroadcastSilenceFrameAsync();
+        }
+    }
+
     public void Stop()
     {
+        audioService.StopCapture();
         audioService.DataAvailable -= BroadcastAudioData;
         audioService.AudioInfoChanged -= BroadcastAudioInfo;
-        audioService.StopCapture();
+        audioService.StateChanged -= HandleAudioStateChanged;
 
         if (!IsRunning)
+        {
+            UpdateState(State with
+            {
+                Status = WidgetServerStatus.Stopped,
+                ConnectedClients = 0,
+                AudioState = audioService.State
+            });
             return;
+        }
 
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
 
-        _listener.Stop();
+        widgetServerHost.Stop();
+        _listenerPrefix = null;
 
         lock (_clients)
         {
@@ -263,12 +362,59 @@ public partial class WebSocketService(SettingsService settingsService, AudioServ
 
             _clients.Clear();
         }
+
+        UpdateState(State with
+        {
+            Status = WidgetServerStatus.Stopped,
+            ConnectedClients = 0,
+            ErrorMessage = null,
+            AudioState = audioService.State
+        });
+    }
+
+    private void UpdateState(WidgetServerState state)
+    {
+        State = state;
+        StateChanged(this, state);
+    }
+
+    private static WidgetServerStatus ComputeStatus(bool isRunning, AudioSubsystemState audioState, string? errorMessage)
+    {
+        if (!string.IsNullOrWhiteSpace(errorMessage))
+            return WidgetServerStatus.Error;
+
+        if (!isRunning)
+            return WidgetServerStatus.Stopped;
+
+        return audioState.Status == AudioCaptureStatus.Error
+            ? WidgetServerStatus.Degraded
+            : WidgetServerStatus.Running;
     }
 
     public void Dispose()
     {
         Stop();
-        _listener.Close();
         GC.SuppressFinalize(this);
+    }
+
+    private bool HasBufferedAudioData()
+    {
+        lock (_audioLock)
+        {
+            return _latestAudioData is not null;
+        }
+    }
+
+    private async Task BroadcastSilenceFrameAsync()
+    {
+        lock (_audioLock)
+        {
+            _latestAudioData = null;
+        }
+
+        if (!IsRunning)
+            return;
+
+        await BroadcastMessageAsync(new byte[SilenceFrameSampleCount * sizeof(float)], WebSocketMessageType.Binary);
     }
 }

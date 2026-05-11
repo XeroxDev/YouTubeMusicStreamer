@@ -15,15 +15,8 @@
                             </div>
                             <p class="help">Enable or disable the queue.</p>
                         </div>
-
-                        <div class="field column">
-                            <label class="label">Embed entire song</label>
-                            <div class="control is-expanded">
-                                <Toggle @bind-Value="_queueItemAsIFrame" OffLabel="Disabled" OnLabel="Enabled"/>
-                            </div>
-                            <p class="help">Should the song be embedded in the table or just static information.</p>
-                        </div>
                     </div>
+                    <p class="help">Queue items use the privacy-friendly preview card instead of embedding YouTube players directly.</p>
                 </div>
             </div>
             <footer class="card-footer">
@@ -52,29 +45,19 @@
                                 <tr>
                                     <td class="song-cell">
                                         @{ var embed = item.Embed; }
-                                        @if (settingsService.GetAppSettings().QueueItemAsIFrame)
+                                        @if (embed is null)
                                         {
-                                            <figure class="image is-16by9">
-                                                <iframe class="has-ratio" src="https://www.youtube.com/embed/@(item.Id)" title="YouTube video player" referrerpolicy="no-referrer"
-                                                        style="border: none;"></iframe>
-                                            </figure>
+                                            <p>No information available</p>
                                         }
                                         else
                                         {
-                                            @if (embed is null)
-                                            {
-                                                <p>No information available</p>
-                                            }
-                                            else
-                                            {
-                                                <figure class="image is-16by9 cursor-pointer" onclick="window.open('https://www.youtube.com/watch?v=@(item.Id)', '_blank', 'noopener,noreferrer')">
-                                                    <img id="image" src="@embed.ThumbnailUrl" alt="Placeholder image" referrerpolicy="no-referrer">
-                                                </figure>
-                                                <div class="song-info">
-                                                    <p class="title is-5">@embed.Title</p>
-                                                    <a href="@embed.AuthorUrl" class="subtitle is-6">@embed.AuthorName</a>
-                                                </div>
-                                            }
+                                            <figure class="image is-16by9 cursor-pointer" onclick="window.open('https://www.youtube.com/watch?v=@(item.Id)', '_blank', 'noopener,noreferrer')">
+                                                <img id="image" src="@embed.ThumbnailUrl" alt="Placeholder image" referrerpolicy="no-referrer">
+                                            </figure>
+                                            <div class="song-info">
+                                                <p class="title is-5">@embed.Title</p>
+                                                <a href="@embed.AuthorUrl" class="subtitle is-6">@embed.AuthorName</a>
+                                            </div>
                                         }
                                     </td>
                                     <td>

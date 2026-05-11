@@ -22,7 +22,7 @@ namespace YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
 public interface ITwitchEventSubService
 {
-    Task StartAsync(string channelId);
+    Task StartAsync(string channelId, string broadcasterAccessToken);
     Task StopAsync();
     event EventHandler<ChannelChatMessageArgs> OnChatMessage;
     event EventHandler<ChannelPointsCustomRewardRedemptionArgs> OnRewardRedeemed;

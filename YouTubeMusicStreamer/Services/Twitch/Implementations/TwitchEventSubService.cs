@@ -17,50 +17,54 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using Microsoft.Extensions.Logging;
-using TwitchLib.Api;
-using TwitchLib.Api.Core.Enums;
-using TwitchLib.EventSub.Websockets;
 using TwitchLib.EventSub.Websockets.Core.EventArgs;
 using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
+using YouTubeMusicStreamer.Services.App;
 using YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
 namespace YouTubeMusicStreamer.Services.Twitch.Implementations;
 
 public sealed class TwitchEventSubService : ITwitchEventSubService
 {
-    private readonly EventSubWebsocketClient _ws;
-    private readonly TwitchAPI _api;
+    private readonly ITwitchEventSubTransport _transport;
+    private readonly ITwitchEventSubSubscriptionClientFactory _subscriptionClientFactory;
     private readonly ILogger<TwitchEventSubService> _logger;
+    private readonly IAsyncDelay _asyncDelay;
     private string? _channelId;
+    private string? _accessToken;
+    private readonly HashSet<string> _ownedSubscriptionIds = [];
 
     public event EventHandler<ChannelChatMessageArgs>? OnChatMessage;
     public event EventHandler<ChannelPointsCustomRewardRedemptionArgs>? OnRewardRedeemed;
 
     public TwitchEventSubService(
-        EventSubWebsocketClient wsClient,
+        ITwitchEventSubTransport transport,
         ILogger<TwitchEventSubService> logger,
-        TwitchAPI api)
+        ITwitchEventSubSubscriptionClientFactory subscriptionClientFactory,
+        IAsyncDelay asyncDelay)
     {
-        _ws = wsClient;
+        _transport = transport;
         _logger = logger;
-        _api = api;
+        _subscriptionClientFactory = subscriptionClientFactory;
+        _asyncDelay = asyncDelay;
 
-        _ws.ChannelChatMessage += HandleChatMessage;
-        _ws.ChannelPointsCustomRewardRedemptionAdd += HandleRewardRedeemed;
+        _transport.ChatMessageReceived += HandleChatMessage;
+        _transport.RewardRedeemed += HandleRewardRedeemed;
 
-        _ws.WebsocketConnected += HandleConnected;
-        _ws.WebsocketDisconnected += HandleDisconnected;
-        _ws.WebsocketReconnected += HandleReconnected;
+        _transport.Connected += HandleConnected;
+        _transport.Disconnected += HandleDisconnected;
+        _transport.Reconnected += HandleReconnected;
     }
 
     /// <summary>
     /// Starts EventSub for a given broadcaster channel.
     /// </summary>
-    public Task StartAsync(string channelId)
+    public Task StartAsync(string channelId, string broadcasterAccessToken)
     {
         _channelId = channelId;
+        _accessToken = broadcasterAccessToken;
         _logger.LogInformation("Connecting EventSub websocket for channel {ChannelId}", channelId);
-        return _ws.ConnectAsync();
+        return _transport.ConnectAsync();
     }
 
     /// <summary>
@@ -68,22 +72,21 @@ public sealed class TwitchEventSubService : ITwitchEventSubService
     /// </summary>
     public async Task StopAsync()
     {
-        await _ws.DisconnectAsync();
-        await DeleteAllAsync().ConfigureAwait(false);
+        await _transport.DisconnectAsync();
+        await DeleteOwnedAsync().ConfigureAwait(false);
         _logger.LogInformation("EventSub stopped");
     }
 
     private async Task HandleConnected(object sender, WebsocketConnectedArgs args)
     {
-        _logger.LogInformation("Websocket connected (sessionId={SessionId})", _ws.SessionId);
+        _logger.LogInformation("Websocket connected (sessionId={SessionId})", _transport.SessionId);
         if (_channelId == null)
         {
             _logger.LogWarning("No channelId set, skipping subscription");
             return;
         }
 
-        // Ensure old subscriptions cleared
-        await DeleteAllAsync().ConfigureAwait(false);
+        await DeleteOwnedAsync().ConfigureAwait(false);
 
         // Subscribe to chat and reward events
         await Subscribe(_channelId, "channel.chat.message").ConfigureAwait(false);
@@ -100,19 +103,19 @@ public sealed class TwitchEventSubService : ITwitchEventSubService
         try
         {
             _logger.LogWarning("Websocket disconnected, trying to reconnect");
-            while (!await _ws.ReconnectAsync() && _retries < 5)
+            while (_retries < 5 && !await _transport.ReconnectAsync())
             {
                 _reconnecting = true;
                 _retries++;
                 _logger.LogWarning("Reconnect attempt {Attempt} failed, retrying in 5 seconds", _retries);
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                await _asyncDelay.DelayAsync(TimeSpan.FromSeconds(5));
             }
 
             if (_retries >= 5)
             {
                 _logger.LogError("Failed to reconnect after 5 attempts, full restart");
                 await StopAsync().ConfigureAwait(false);
-                await StartAsync(_channelId!).ConfigureAwait(false);
+                await StartAsync(_channelId!, _accessToken!).ConfigureAwait(false);
             }
         }
         finally
@@ -127,6 +130,7 @@ public sealed class TwitchEventSubService : ITwitchEventSubService
         _logger.LogInformation("Websocket reconnected, re-subscribing");
         if (_channelId != null)
         {
+            await DeleteOwnedAsync().ConfigureAwait(false);
             await Subscribe(_channelId, "channel.chat.message").ConfigureAwait(false);
             await Subscribe(_channelId, "channel.channel_points_custom_reward_redemption.add").ConfigureAwait(false);
         }
@@ -163,13 +167,10 @@ public sealed class TwitchEventSubService : ITwitchEventSubService
 
         try
         {
-            await _api.Helix.EventSub.CreateEventSubSubscriptionAsync(
-                type,
-                "1",
-                conditions,
-                EventSubTransportMethod.Websocket,
-                _ws.SessionId
-            );
+            var client = CreateSubscriptionClient();
+            var subscriptionIds = await client.CreateSubscriptionAsync(type, "1", conditions, _transport.SessionId!);
+            foreach (var subscriptionId in subscriptionIds)
+                _ownedSubscriptionIds.Add(subscriptionId);
         }
         catch (Exception ex)
         {
@@ -181,23 +182,27 @@ public sealed class TwitchEventSubService : ITwitchEventSubService
     }
 
 
-    private async Task DeleteAllAsync()
+    private async Task DeleteOwnedAsync()
     {
-        var subs = await _api.Helix.EventSub
-            .GetEventSubSubscriptionsAsync()
-            .ConfigureAwait(false);
-        if (subs?.Subscriptions == null || subs.Subscriptions.Length == 0)
+        if (_ownedSubscriptionIds.Count == 0)
         {
-            _logger.LogInformation("No existing subscriptions to delete");
             return;
         }
 
-        foreach (var s in subs.Subscriptions)
+        foreach (var subscriptionId in _ownedSubscriptionIds.ToArray())
         {
-            await _api.Helix.EventSub
-                .DeleteEventSubSubscriptionAsync(s.Id)
-                .ConfigureAwait(false);
-            _logger.LogInformation("Deleted subscription {Type}", s.Type);
+            var client = CreateSubscriptionClient();
+            await client.DeleteSubscriptionAsync(subscriptionId).ConfigureAwait(false);
+            _ownedSubscriptionIds.Remove(subscriptionId);
+            _logger.LogInformation("Deleted owned EventSub subscription {SubscriptionId}", subscriptionId);
         }
+    }
+
+    private ITwitchEventSubSubscriptionClient CreateSubscriptionClient()
+    {
+        if (string.IsNullOrWhiteSpace(_accessToken))
+            throw new InvalidOperationException("EventSub broadcaster token is not available.");
+
+        return _subscriptionClientFactory.Create(_accessToken);
     }
 }

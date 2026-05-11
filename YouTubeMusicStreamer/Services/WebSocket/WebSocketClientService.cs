@@ -26,6 +26,7 @@ public class WebSocketClientService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly List<IWebSocketClient> _availableClients = [];
+    private IReadOnlyList<IWebSocketClient>? _cachedClients;
 
 
     public WebSocketClientService(IServiceProvider serviceProvider)
@@ -47,9 +48,12 @@ public class WebSocketClientService
 
             if (ActivatorUtilities.CreateInstance(_serviceProvider, type) is IWebSocketClient client) _availableClients.Add(client);
         }
+
+        _availableClients.Sort(static (left, right) => string.Compare(left.Name, right.Name, StringComparison.Ordinal));
+        _cachedClients = _availableClients.AsReadOnly();
     }
 
-    public List<IWebSocketClient> GetAvailableClients() => _availableClients;
+    public IReadOnlyList<IWebSocketClient> GetAvailableClients() => _cachedClients ?? [];
 
     public IWebSocketClient? GetClient(string name) => _availableClients.FirstOrDefault(c => c.Name == name);
 }

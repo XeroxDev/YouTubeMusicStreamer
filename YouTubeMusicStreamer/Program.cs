@@ -1,4 +1,4 @@
-﻿// This file is part of YouTubeMusicStreamer.
+// This file is part of YouTubeMusicStreamer.
 // Copyright (C) 2025 Dominic Ris
 // 
 // YouTubeMusicStreamer is free software: you can redistribute it and/or modify
@@ -21,6 +21,8 @@ using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using Velopack;
 using WinRT;
+using YouTubeMusicStreamer.Services.App;
+using YouTubeMusicStreamer.Services.Startup;
 using YouTubeMusicStreamer.Utils;
 using Application = Microsoft.UI.Xaml.Application;
 
@@ -31,23 +33,22 @@ public static class Program
     [STAThread]
     public static int Main()
     {
+        var appIdentitySource = new AssemblyAppIdentitySource();
         VelopackApp.Build()
-            .OnFirstRun(v => AppUtils.FirstInstall = v)
-            .OnRestarted(v => AppUtils.Updated = v)
+            .OnFirstRun(AppLaunchStateCapture.RecordFirstInstall)
+            .OnRestarted(AppLaunchStateCapture.RecordUpdated)
             .Run();
         var logger = CreateLogger("Program");
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {
             logger.LogError(args.ExceptionObject as Exception, "Unhandled exception: {Message}", (args.ExceptionObject as Exception)?.Message);
         };
-        var instance = AppInstance.FindOrRegisterForKey(AppUtils.AppName);
+        var instance = AppInstance.FindOrRegisterForKey(appIdentitySource.AppName);
         if (!instance.IsCurrent)
         {
-            logger.LogInformation("Redirecting activation to current instance");
-            var first = AppInstance.GetCurrent();
-            instance.RedirectActivationToAsync(first.GetActivatedEventArgs())
-                .GetAwaiter().GetResult();
-            return 0;
+            var shouldExit = InstanceRecovery.RedirectOrRecoverAsync(logger, instance).GetAwaiter().GetResult();
+            if (shouldExit)
+                return 0;
         }
 
         logger.LogInformation("Initializing App");

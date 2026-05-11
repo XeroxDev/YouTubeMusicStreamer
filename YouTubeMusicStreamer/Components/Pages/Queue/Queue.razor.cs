@@ -16,110 +16,94 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using YouTubeMusicStreamer.Models;
 using YouTubeMusicStreamer.Services.App;
+using YouTubeMusicStreamer.Services.App.Persistence;
+using YouTubeMusicStreamer.Services.YouTube;
 
 namespace YouTubeMusicStreamer.Components.Pages.Queue;
 
-public partial class Queue(SettingsService settingsService, IToastService toastService) : ComponentBase, IDisposable
+public partial class Queue(QueuePageFacade queueFacade, IAppToastService toastService) : ComponentBase, IDisposable
 {
     private List<QueueItem> _queueItems = [];
     private bool _queueActive;
-    private bool _queueItemAsIFrame;
 
     private async Task RemoveItem(QueueItem item)
     {
-        await settingsService.SaveAppSettingAsync(s => s.Queue.Remove(item));
+        await queueFacade.RemoveItemAsync(item);
     }
 
     private async Task ClearQueue()
     {
-        await settingsService.SaveAppSettingAsync(s => s.Queue.Clear());
+        await queueFacade.ClearQueueAsync();
     }
 
     private async Task MoveItemUp(QueueItem item)
     {
-        var index = _queueItems.IndexOf(item);
-        if (index == 0) return;
-
-        await settingsService.SaveAppSettingAsync(s =>
-        {
-            s.Queue.Remove(item);
-            s.Queue.Insert(index - 1, item);
-        });
+        await queueFacade.MoveItemUpAsync(item);
     }
 
     private async Task MoveItemDown(QueueItem item)
     {
-        var index = _queueItems.IndexOf(item);
-        if (index == _queueItems.Count - 1) return;
-
-        await settingsService.SaveAppSettingAsync(s =>
-        {
-            s.Queue.Remove(item);
-            s.Queue.Insert(index + 1, item);
-        });
+        await queueFacade.MoveItemDownAsync(item);
     }
 
     private async Task MoveItemToTop(QueueItem item)
     {
-        await settingsService.SaveAppSettingAsync(s =>
-        {
-            s.Queue.Remove(item);
-            s.Queue.Insert(0, item);
-        });
+        await queueFacade.MoveItemToTopAsync(item);
     }
 
     private async Task MoveItemToBottom(QueueItem item)
     {
-        await settingsService.SaveAppSettingAsync(s =>
-        {
-            s.Queue.Remove(item);
-            s.Queue.Add(item);
-        });
+        await queueFacade.MoveItemToBottomAsync(item);
     }
     
 
     protected override void OnInitialized()
     {
-        settingsService.AppSettingsChanged += OnAppSettingsChanged;
-        _queueItems = settingsService.GetAppSettings().Queue.ToList();
-        ResetGlobalSettings(false);
+        queueFacade.Initialize();
+        queueFacade.StateChanged += OnFacadeStateChanged;
+        RefreshState(resetDraftSettings: true);
     }
 
-    private void OnAppSettingsChanged(AppSettings obj)
+    private void OnFacadeStateChanged(object? sender, EventArgs e)
     {
-        _queueItems = obj.Queue;
-        Task.Delay(1).ContinueWith(_ => InvokeAsync(StateHasChanged));
+        RefreshState();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        settingsService.AppSettingsChanged -= OnAppSettingsChanged;
+        queueFacade.StateChanged -= OnFacadeStateChanged;
+        queueFacade.Dispose();
         GC.SuppressFinalize(this);
     }
 
     private async Task SaveGlobalSettings()
     {
-        await settingsService.SaveAppSettingAsync(s =>
-        {
-            s.QueueActive = _queueActive;
-            s.QueueItemAsIFrame = _queueItemAsIFrame;
-        });
+        await queueFacade.SaveSettingsAsync(new QueueSettingsSnapshot(_queueActive));
 
         toastService.ShowSuccess("Settings saved successfully.");
     }
 
     private void ResetGlobalSettings(bool notify = true)
     {
-        _queueActive = settingsService.GetAppSettings().QueueActive;
-        _queueItemAsIFrame = settingsService.GetAppSettings().QueueItemAsIFrame;
+        _queueActive = queueFacade.Settings.QueueActive;
 
         if (notify)
         {
             toastService.ShowSuccess("Settings reset to previous saved state.");
+        }
+    }
+
+    private void RefreshState(bool resetDraftSettings = false)
+    {
+        _queueItems = queueFacade.QueueItems.ToList();
+
+        if (resetDraftSettings)
+        {
+            ResetGlobalSettings(false);
         }
     }
 }

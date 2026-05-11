@@ -16,18 +16,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using TwitchLib.Api.Helix.Models.ChannelPoints;
-using YouTubeMusicStreamer.Services.Twitch.Implementations.EventArgs;
+using YouTubeMusicStreamer.Services.Twitch.Implementations;
 
 namespace YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
 public interface ITwitchUserService
 {
-    Task InitializeAsync();
-    string? Username { get; }
-    string? ChannelId { get; }
-    string? ProfileImageUrl { get; }
-    IReadOnlyList<CustomReward> Rewards { get; }
-    Task RefreshRewardsAsync();
-    event EventHandler<UserInitializedEventArgs> UserInitialized;
+    Task<TwitchUserIdentity?> GetCurrentUserAsync(string accessToken);
+    Task<IReadOnlyList<TwitchRewardSnapshot>> GetRewardsAsync(string accessToken, string channelId);
 }

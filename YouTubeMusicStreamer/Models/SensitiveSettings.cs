@@ -20,6 +20,9 @@ namespace YouTubeMusicStreamer.Models;
 
 public class SensitiveSettings
 {
+    // Legacy single-account token kept only as a migration fallback.
     public string? TwitchAccessToken { get; set; }
+    public string? TwitchBroadcasterAccessToken { get; set; }
+    public string? TwitchBotAccessToken { get; set; }
     public string? YtmDesktopToken { get; set; }
 }

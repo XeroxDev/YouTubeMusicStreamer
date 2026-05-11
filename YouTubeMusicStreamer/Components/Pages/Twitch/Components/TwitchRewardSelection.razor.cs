@@ -1,13 +1,30 @@
-﻿using System.Linq.Expressions;
+﻿// This file is part of YouTubeMusicStreamer.
+// Copyright (C) 2025 Dominic Ris
+// 
+// YouTubeMusicStreamer is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// YouTubeMusicStreamer is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+// 
+// For full license text, see the LICENSE file in the project’s root directory.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
+
+using System.ComponentModel;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
-using TwitchService = YouTubeMusicStreamer.Services.Twitch.TwitchService;
+using YouTubeMusicStreamer.Services.Twitch;
 
 namespace YouTubeMusicStreamer.Components.Pages.Twitch.Components;
 
-public partial class TwitchRewardSelection(TwitchService twitchService) : ComponentBase
+public partial class TwitchRewardSelection(TwitchRewardsFacade twitchRewardsFacade) : ComponentBase, IDisposable
 {
-    private bool _refreshing;
-
     private string _value = string.Empty;
 
     [Parameter]
@@ -26,16 +43,13 @@ public partial class TwitchRewardSelection(TwitchService twitchService) : Compon
 
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public Expression<Func<string>>? ValueExpression { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool IncludeDisabledOption { get; set; } = true;
 
     protected override Task OnInitializedAsync()
     {
-        twitchService.PropertyChanged += async (_, args) =>
-        {
-            if (args.PropertyName != nameof(twitchService.Rewards)) return;
-            await Task.Delay(100);
-            _refreshing = false;
-            StateHasChanged();
-        };
+        twitchRewardsFacade.Initialize();
+        twitchRewardsFacade.StateChanged += OnRewardsFacadeStateChanged;
         return Task.CompletedTask;
     }
 
@@ -43,22 +57,26 @@ public partial class TwitchRewardSelection(TwitchService twitchService) : Compon
     {
         if (firstRender)
         {
-            if (twitchService.Rewards.Count == 0)
+            if (twitchRewardsFacade.Rewards.Count == 0)
             {
-                await ReloadRewards();
-            }
-            else
-            {
-                _refreshing = false;
+                await ReloadRewardsAsync();
             }
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task ReloadRewards()
+    private void OnRewardsFacadeStateChanged(object? sender, EventArgs args)
     {
-        _refreshing = true;
-        await twitchService.RefreshRewardsAsync();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ReloadRewardsAsync() => await twitchRewardsFacade.RefreshAsync();
+
+    public void Dispose()
+    {
+        twitchRewardsFacade.StateChanged -= OnRewardsFacadeStateChanged;
+        twitchRewardsFacade.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

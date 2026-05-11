@@ -85,12 +85,20 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.SassCompiler" Version="1.85.0"/>
-        <PackageReference Include="Blazored.Toast" Version="4.2.1"/>
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3"/>
         <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.40"/>
         <PackageReference Include="NAudio.Wasapi" Version="2.2.1"/>
-        <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0"/>
+        <PackageReference Include="Serilog" Version="4.2.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
         <PackageReference Include="TwitchLib.Api" Version="3.9.0"/>
         <PackageReference Include="TwitchLib.Client" Version="3.3.1"/>
         <PackageReference Include="TwitchLib.EventSub.Websockets" Version="0.6.0-preview-dbc970c"/>
@@ -109,15 +117,16 @@
     </ItemGroup>
 
     <Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild">
-        <GenerateBuildInfoTask ProjectDir="$(MSBuildProjectDirectory)"/>
+        <GenerateBuildInfoTask ProjectDir="$(MSBuildProjectDirectory)" IntermediateOutputPath="$(IntermediateOutputPath)"/>
         <ItemGroup>
-            <Compile Include="$(MSBuildProjectDirectory)\GeneratedBuildInfo.cs"/>
+            <Compile Include="$(IntermediateOutputPath)GeneratedBuildInfo.g.cs" />
         </ItemGroup>
     </Target>
 
     <UsingTask TaskName="GenerateBuildInfoTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
         <ParameterGroup>
             <ProjectDir ParameterType="System.String" Required="true"/>
+            <IntermediateOutputPath ParameterType="System.String" Required="true"/>
         </ParameterGroup>
         <Task>
             <Code Type="Fragment" Language="cs">
@@ -147,36 +156,20 @@
                     public static partial class GeneratedBuildInfo
                     {
                         public const string GitCommit = "{{gitCommit}}";
-                        public const string TwitchClientId = "{{twitchClientId}}";
-                        public const string BuildTime = "{{buildTime}}";
+                    public const string TwitchClientId = "{{twitchClientId}}";
+                    public const string BuildTime = "{{buildTime}}";
                     }
                     """;
                     
-                    System.IO.File.WriteAllText(Path.Combine(ProjectDir, "GeneratedBuildInfo.cs"), fileContent);
+                    Directory.CreateDirectory(IntermediateOutputPath);
+                    System.IO.File.WriteAllText(Path.Combine(IntermediateOutputPath, "GeneratedBuildInfo.g.cs"), fileContent);
                 ]]>
             </Code>
         </Task>
     </UsingTask>
 
-    <Target Name="GenerateThirdPartyLicenses" BeforeTargets="PrepareForPublish" Condition="'$(Configuration)'=='Release'">
-        <MakeDir Directories="$(BaseIntermediateOutputPath)ThirdPartyLicenses" />
-        <Exec Command="dotnet tool restore" />
-        <Exec Command="dotnet tool run nuget-license -i $(ProjectDir)$(MSBuildProjectFile) -t -o JsonPretty -d $(BaseIntermediateOutputPath)ThirdPartyLicenses\ -fo $(BaseIntermediateOutputPath)third-party-licenses.json -override $(ProjectDir)license-override.json" IgnoreExitCode="true">
-            <Output TaskParameter="ExitCode" PropertyName="NuGetLicenseExitCode" />
-        </Exec>
-        <Warning Condition="'$(NuGetLicenseExitCode)'=='3'" Text="nuget-license reported validation warnings; see generated files for details." />
-        <Error Condition="'$(NuGetLicenseExitCode)'!='0' AND '$(NuGetLicenseExitCode)'!='3'" Text="nuget-license failed with exit code $(NuGetLicenseExitCode)." />
-
-        <ItemGroup>
-            <MauiAsset Remove="$(BaseIntermediateOutputPath)third-party-licenses.json" />
-            <MauiAsset Remove="$(BaseIntermediateOutputPath)ThirdPartyLicenses\**" />
-            <MauiAsset Include="$(BaseIntermediateOutputPath)third-party-licenses.json" LogicalName="third-party-licenses.json">
-                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            </MauiAsset>
-            <MauiAsset Include="$(BaseIntermediateOutputPath)ThirdPartyLicenses\**" LogicalName="ThirdPartyLicenses\%(RecursiveDir)%(Filename)%(Extension)">
-                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            </MauiAsset>
-        </ItemGroup>
+    <Target Name="VerifyPreparedThirdPartyLicenses" BeforeTargets="PrepareForPublish" Condition="'$(Configuration)'=='Release'">
+        <Error Condition="!Exists('$(ProjectDir)Resources\Raw\Generated\third-party-licenses.json')" Text="Missing prepared third-party license asset: Resources\Raw\Generated\third-party-licenses.json. Run scripts/generate-third-party-licenses.ps1 before publishing." />
     </Target>
 
 </Project>

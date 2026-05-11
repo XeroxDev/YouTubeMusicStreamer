@@ -19,30 +19,39 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
-using TwitchLib.Api.Helix.Models.ChannelPoints;
-using TwitchLib.EventSub.Core.SubscriptionTypes.Channel;
-using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 using YouTubeMusicStreamer.Enums;
 using YouTubeMusicStreamer.Services.App;
-using YouTubeMusicStreamer.Services.Commands;
-using YouTubeMusicStreamer.Services.Twitch.Implementations.EventArgs;
+using YouTubeMusicStreamer.Services.App.Diagnostics;
+using YouTubeMusicStreamer.Services.App.Persistence;
 using YouTubeMusicStreamer.Services.Twitch.Interfaces;
-using YouTubeMusicStreamer.Windows;
 
 namespace YouTubeMusicStreamer.Services.Twitch;
 
-public sealed partial class TwitchService : INotifyPropertyChanged, IDisposable
+public sealed partial class TwitchService : ITwitchStatusSource, IDisposable
 {
-    // UI‐bound state
     private ConnectorState _state;
+    private TwitchSessionStatus _sessionStatus;
     private string? _username;
+    private string? _broadcasterAccountId;
+    private string? _botUsername;
     private string? _profileImageUrl;
-    private List<CustomReward> _rewards = [];
+    private string? _botProfileImageUrl;
+    private List<TwitchRewardSnapshot> _rewards = [];
+    private TwitchAccountRole _effectiveChatRole;
+    private bool _isAuthInProgress;
+    private TwitchAccountRole? _pendingAuthRole;
+    private CancellationTokenSource? _authCancellation;
 
     public ConnectorState State
     {
         get => _state;
         private set => SetField(ref _state, value);
+    }
+
+    public TwitchSessionStatus SessionStatus
+    {
+        get => _sessionStatus;
+        private set => SetField(ref _sessionStatus, value);
     }
 
     public string? Username
@@ -51,280 +60,334 @@ public sealed partial class TwitchService : INotifyPropertyChanged, IDisposable
         private set => SetField(ref _username, value);
     }
 
+    public string? BroadcasterAccountId
+    {
+        get => _broadcasterAccountId;
+        private set => SetField(ref _broadcasterAccountId, value);
+    }
+
+    public string? BotUsername
+    {
+        get => _botUsername;
+        private set => SetField(ref _botUsername, value);
+    }
+
     public string? ProfileImageUrl
     {
         get => _profileImageUrl;
         private set => SetField(ref _profileImageUrl, value);
     }
 
-    public IReadOnlyList<CustomReward> Rewards
+    public string? BotProfileImageUrl
+    {
+        get => _botProfileImageUrl;
+        private set => SetField(ref _botProfileImageUrl, value);
+    }
+
+    public IReadOnlyList<TwitchRewardSnapshot> Rewards
     {
         get => _rewards;
         private set => SetField(ref _rewards, value.ToList());
     }
 
-    public event EventHandler<Exception>? OnError;
+    public TwitchAccountRole EffectiveChatRole
+    {
+        get => _effectiveChatRole;
+        private set => SetField(ref _effectiveChatRole, value);
+    }
+
+    public bool IsAuthInProgress
+    {
+        get => _isAuthInProgress;
+        private set => SetField(ref _isAuthInProgress, value);
+    }
+
+    public TwitchAccountRole? PendingAuthRole
+    {
+        get => _pendingAuthRole;
+        private set => SetField(ref _pendingAuthRole, value);
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private readonly ITwitchTokenService _tokenService;
-    private readonly ITwitchUserService _userService;
-    private readonly ITwitchChatService _chatService;
-    private readonly ITwitchEventSubService _eventSubService;
-    private readonly CommandService _commandService;
-    private readonly SettingsService _settingsService;
+    private readonly ITwitchSessionCoordinator _sessionCoordinator;
     private readonly ILogger<TwitchService> _logger;
-
-    // private readonly ConcurrentDictionary<string, TaskCompletionSource<ChannelPointsCustomRewardRedemption>> _pendingRedemptions = new(concurrencyLevel: 1, capacity: 100);
+    private readonly IAppDiagnosticsService _diagnosticsService;
+    private bool _disposed;
 
     public TwitchService(
-        SettingsService settingsService,
-        ITwitchTokenService tokenService,
-        ITwitchUserService userService,
-        ITwitchChatService chatService,
-        ITwitchEventSubService eventSubService,
-        CommandService commandService,
-        ILogger<TwitchService> logger)
+        ITwitchSessionCoordinator sessionCoordinator,
+        ILogger<TwitchService> logger,
+        IAppDiagnosticsService diagnosticsService)
     {
-        _settingsService = settingsService;
-        _tokenService = tokenService;
-        _userService = userService;
-        _chatService = chatService;
-        _eventSubService = eventSubService;
-        _commandService = commandService;
+        _sessionCoordinator = sessionCoordinator;
         _logger = logger;
+        _diagnosticsService = diagnosticsService;
 
-        _tokenService.TokenValidated += OnTokenValidated;
-        _userService.UserInitialized += OnUserInitialized;
-        _eventSubService.OnChatMessage += OnChatMessage;
-        _eventSubService.OnRewardRedeemed += OnRewardRedeemed;
-
-        var saved = _settingsService.GetSensitiveSettings().TwitchAccessToken;
-        State = string.IsNullOrWhiteSpace(saved)
-            ? ConnectorState.LoggedOut
-            : ConnectorState.Loading;
-
-        if (!string.IsNullOrWhiteSpace(saved))
-            _ = _tokenService.ValidateAsync(saved);
+        _sessionCoordinator.StateChanged += OnStateChanged;
+        _sessionCoordinator.SessionFaulted += OnSessionFaulted;
+        State = ConnectorState.LoggedOut;
+        SessionStatus = TwitchSessionStatus.LoggedOut;
+        ApplySessionState(_sessionCoordinator.CurrentState);
     }
 
-    public Task StartOAuthFlowAsync(Action<string> onError)
+    public async Task InitializeIfNeededAsync()
     {
-        _logger.LogInformation("Starting OAuth flow");
-        State = ConnectorState.LoggingIn;
-
-        Application.Current?.Dispatcher.Dispatch(() =>
+        if (!IsAuthInProgress)
         {
-            var oauthWindow = new OAuthWindow(async void (response) =>
-            {
-                try
-                {
-                    var (error, state, token) = response;
+            State = ConnectorState.Loading;
+        }
 
-                    if (error is not null)
-                    {
-                        State = state;
-                        onError(error);
-                        OnError?.Invoke(this, new Exception($"OAuth error: {error}"));
-                        return;
-                    }
-
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        onError("Received null or empty token during OAuth flow");
-                        OnError?.Invoke(this, new Exception("Empty token from OAuth"));
-                        return;
-                    }
-
-                    var valid = await _tokenService.ValidateAsync(token);
-                    if (!valid)
-                    {
-                        onError("Received invalid token during OAuth flow");
-                        OnError?.Invoke(this, new Exception("Invalid token from OAuth"));
-                        return;
-                    }
-
-                    await _settingsService.SaveSensitiveSettingAsync(s => s.TwitchAccessToken = token);
-
-                    _logger.LogInformation("OAuth successful, token stored");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during OAuth flow");
-                    OnError?.Invoke(this, ex);
-                    onError("Unexpected error during OAuth flow");
-                }
-            });
-
-            Application.Current.OpenWindow(oauthWindow);
-        });
-
-        return Task.CompletedTask;
+        await _sessionCoordinator.InitializeIfNeededAsync();
     }
 
-    private CancellationTokenSource? _rewardRefreshCts;
-    private readonly SemaphoreSlim _refreshLock = new(1, 1);
-
-    public async Task RefreshRewardsAsync()
+    public async Task StartOAuthFlowAsync(Action<string> onError)
     {
-        // Cancel any previous debounce request
-        _rewardRefreshCts?.Cancel();
-        _rewardRefreshCts?.Dispose();
+        if (IsAuthInProgress)
+            return;
 
-        _rewardRefreshCts = new CancellationTokenSource();
-
-        var token = _rewardRefreshCts.Token;
+        _logger.LogInformation("Starting OAuth flow");
+        BeginAuth(TwitchAccountRole.Broadcaster);
 
         try
         {
-            await Task.Delay(100, token); // debounce delay (adjust as needed)
-            await _refreshLock.WaitAsync(token);
+            var failure = await _sessionCoordinator.StartBroadcasterAuthAsync(_authCancellation!.Token);
+            if (failure is null)
+                return;
 
-            await _userService.RefreshRewardsAsync();
-            Rewards = _userService.Rewards;
+            onError(failure.Message);
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException) when (_authCancellation?.IsCancellationRequested == true)
         {
-            // Silently swallow canceled attempts
+            _logger.LogInformation("Twitch broadcaster OAuth flow was canceled");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to refresh rewards");
-            OnError?.Invoke(this, ex);
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Auth, "Twitch broadcaster authentication failed.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Toast()
+                .Write();
+            onError("Unexpected error during OAuth flow");
         }
         finally
         {
-            if (_refreshLock.CurrentCount == 0)
-                _refreshLock.Release();
+            EndAuth();
         }
     }
 
+    public async Task RefreshRewardsAsync()
+    {
+        try
+        {
+            await _sessionCoordinator.RefreshRewardsAsync();
+        }
+        catch (Exception ex)
+        {
+            Diagnostic()
+                .Warning(AppDiagnosticCategory.Configuration, "Failed to refresh Twitch rewards.")
+                .WithLogLevel(LogLevel.Error)
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .StatusOnly()
+                .Write();
+        }
+    }
 
-    // tear everything down
+    public async Task<ManagedRewardSyncResult> RefreshManagedRewardBindingAsync(CommandRewardBindingSnapshot binding, bool commandRequiresInput)
+    {
+        try
+        {
+            return await _sessionCoordinator.RefreshManagedRewardBindingAsync(binding, commandRequiresInput);
+        }
+        catch (Exception ex)
+        {
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Configuration, "Failed to refresh managed reward binding.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Write();
+            throw;
+        }
+    }
+
+    public async Task<ManagedRewardSyncResult> CreateManagedRewardAsync(CommandRewardBindingSnapshot binding, bool commandRequiresInput)
+    {
+        try
+        {
+            return await _sessionCoordinator.CreateManagedRewardAsync(binding, commandRequiresInput);
+        }
+        catch (Exception ex)
+        {
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Configuration, "Failed to create managed reward.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Write();
+            throw;
+        }
+    }
+
+    public async Task<ManagedRewardSyncResult> UpdateManagedRewardAsync(CommandRewardBindingSnapshot binding, bool commandRequiresInput)
+    {
+        try
+        {
+            return await _sessionCoordinator.UpdateManagedRewardAsync(binding, commandRequiresInput);
+        }
+        catch (Exception ex)
+        {
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Configuration, "Failed to update managed reward.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Write();
+            throw;
+        }
+    }
+
     public async Task LogoutAsync()
     {
         try
         {
-            await _settingsService.SaveSensitiveSettingAsync(s => s.TwitchAccessToken = null);
-            await _eventSubService.StopAsync();
-            await _chatService.DisconnectAsync();
-
-            Username = null;
-            ProfileImageUrl = null;
-            State = ConnectorState.LoggedOut;
+            await _sessionCoordinator.LogoutAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during logout");
-            OnError?.Invoke(this, ex);
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Auth, "Failed to log out from Twitch.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Toast()
+                .Write();
         }
     }
 
-    private void OnTokenValidated(object? sender, TokenValidatedEventArgs args)
+    public async Task StartBotOAuthFlowAsync(Action<string> onError)
     {
-        if (!args.IsValid)
-        {
-            _logger.LogWarning("Invalid Twitch token");
-            State = ConnectorState.LoggedOut;
-            _settingsService.SaveSensitiveSettingAsync(x => x.TwitchAccessToken = null).Wait();
-            OnError?.Invoke(this, new Exception("Invalid Twitch Token"));
+        if (IsAuthInProgress)
             return;
-        }
 
-        _settingsService.SaveSensitiveSettingAsync(s => s.TwitchAccessToken = args.Token)
-            .ContinueWith(_ => _userService.InitializeAsync());
+        BeginAuth(TwitchAccountRole.Bot);
+
+        try
+        {
+            var failure = await _sessionCoordinator.StartBotAuthAsync(_authCancellation!.Token);
+            if (failure is null)
+                return;
+
+            onError(failure.Message);
+        }
+        catch (OperationCanceledException) when (_authCancellation?.IsCancellationRequested == true)
+        {
+            _logger.LogInformation("Twitch bot OAuth flow was canceled");
+        }
+        catch (Exception ex)
+        {
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Auth, "Twitch bot authentication failed.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Toast()
+                .Write();
+            onError("Unexpected error during bot OAuth flow");
+        }
+        finally
+        {
+            EndAuth();
+        }
     }
 
-    private async void OnUserInitialized(object? sender, UserInitializedEventArgs args)
+    public async Task DisconnectBotAsync()
     {
         try
         {
-            Username = args.Username;
-            ProfileImageUrl = args.ProfileImageUrl;
-            State = ConnectorState.LoggedIn;
-
-            // ready—start chat & EventSub
-            await _chatService.ConnectAsync(args.Username, _settingsService.GetSensitiveSettings().TwitchAccessToken!);
-            await _eventSubService.StartAsync(args.ChannelId);
+            await _sessionCoordinator.DisconnectBotAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting up chat/EventSub");
-            OnError?.Invoke(this, ex);
-            State = ConnectorState.Error;
+            Diagnostic()
+                .Error(AppDiagnosticCategory.Auth, "Failed to disconnect Twitch bot.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .Toast()
+                .Write();
         }
     }
 
-    private void OnChatMessage(object? sender, ChannelChatMessageArgs args)
+    public void CancelPendingAuth()
     {
-        var evt = args.Notification.Payload.Event;
-
-        // redemption COA vs. pure chat
-        var rewardId = evt.ChannelPointsCustomRewardId;
-        if (!string.IsNullOrEmpty(rewardId) && string.IsNullOrEmpty(evt.Message.Text))
-            return; // wait for the actual chat text
-
-        _ = HandleChatAsync(evt);
-    }
-
-    private Task HandleChatAsync(ChannelChatMessage evt)
-    {
-        // var tcs = new TaskCompletionSource<CommandResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _commandService.ProcessInput(evt/*, r => tcs.TrySetResult(r)*/);
-        return Task.CompletedTask;
-        /*var result = await tcs.Task.ConfigureAwait(false);
-
-        var rewardId = evt.ChannelPointsCustomRewardId;
-        if (string.IsNullOrWhiteSpace(rewardId))
+        if (!IsAuthInProgress)
             return;
 
-        if (_pendingRedemptions.TryRemove(rewardId, out var redTcs))
-        {
-            try
-            {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var redemption = await redTcs.Task.WaitAsync(cts.Token).ConfigureAwait(false);
-
-                if (result == CommandResult.Success) ApproveRedemption(redemption);
-                else RefundRedemption(redemption);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("Timeout waiting for redemption {RewardId}", rewardId);
-                OnError?.Invoke(this, new Exception($"Timeout waiting for redemption {rewardId}"));
-            }
-        }*/
+        _authCancellation?.Cancel();
     }
 
-    private void OnRewardRedeemed(object? sender, ChannelPointsCustomRewardRedemptionArgs args)
+    private void OnStateChanged(object? sender, TwitchSessionState state) => ApplySessionState(state);
+
+    private void OnSessionFaulted(object? sender, TwitchSessionFailure failure)
     {
-        var evt = args.Notification.Payload.Event;
-
-        if (!string.IsNullOrEmpty(evt.UserInput))
-        {
-            /*var tcs = new TaskCompletionSource<ChannelPointsCustomRewardRedemption>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _pendingRedemptions[evt.Reward.Id] = tcs;*/
+        if (failure.Kind == TwitchFailureKind.AuthCancelled)
             return;
-        }
 
-        // immediate handling if no user-input
-        _commandService.ProcessInput(evt /*, result =>
-        {
-            if (result == CommandResult.Success) ApproveRedemption(evt);
-            else RefundRedemption(evt);
-        }*/);
+        RecordDiagnostic(
+            failure.Kind is TwitchFailureKind.Unknown or TwitchFailureKind.AccountReset
+                ? AppDiagnosticSeverity.Error
+                : AppDiagnosticSeverity.Warning,
+            MapDiagnosticCategory(failure.Kind),
+            failure.Message,
+            failure.Exception?.Message,
+            failure.Exception,
+            MapDiagnosticVisibility(failure.Kind));
     }
 
-    // private void ApproveRedemption(ChannelPointsCustomRewardRedemption redemption)
-    // {
-    //     // For future. Can only be implemented, if the rewards are created by us
-    //     // _logger.LogDebug("Approve redemption {Reward}/{Id}", redemption.Reward.Id, redemption.Id);
-    // }
-    //
-    // private void RefundRedemption(ChannelPointsCustomRewardRedemption redemption)
-    // {
-    //     // For future. Can only be implemented, if the rewards are created by us
-    //     // _logger.LogDebug("Refund redemption {Reward}/{Id}", redemption.Reward.Id, redemption.Id);
-    // }
+    private void ApplySessionState(TwitchSessionState state)
+    {
+        SessionStatus = state.Status;
+        BroadcasterAccountId = state.Broadcaster.Identity?.UserId;
+        Username = state.Broadcaster.Identity?.DisplayName;
+        BotUsername = state.Bot?.Identity?.DisplayName;
+        ProfileImageUrl = state.Broadcaster.Identity?.ProfileImageUrl;
+        BotProfileImageUrl = state.Bot?.Identity?.ProfileImageUrl;
+        Rewards = state.Rewards;
+        EffectiveChatRole = state.EffectiveChatRole;
+        State = IsAuthInProgress ? ConnectorState.LoggingIn : MapConnectorState(state.Status);
+    }
+
+    private void BeginAuth(TwitchAccountRole role)
+    {
+        EndAuth();
+        _authCancellation = new CancellationTokenSource();
+        PendingAuthRole = role;
+        IsAuthInProgress = true;
+        State = ConnectorState.LoggingIn;
+    }
+
+    private void EndAuth()
+    {
+        _authCancellation?.Dispose();
+        _authCancellation = null;
+        PendingAuthRole = null;
+        IsAuthInProgress = false;
+        State = MapConnectorState(SessionStatus);
+    }
+
+    private static ConnectorState MapConnectorState(TwitchSessionStatus status) => status switch
+    {
+        TwitchSessionStatus.NotConfigured => ConnectorState.LoggedOut,
+        TwitchSessionStatus.AuthRequired => ConnectorState.LoggedOut,
+        TwitchSessionStatus.LoggedOut => ConnectorState.LoggedOut,
+        TwitchSessionStatus.ValidatingBroadcaster => ConnectorState.Loading,
+        TwitchSessionStatus.ValidatingBot => ConnectorState.Loading,
+        TwitchSessionStatus.BroadcasterReady => ConnectorState.Loading,
+        TwitchSessionStatus.ConnectingChat => ConnectorState.Loading,
+        TwitchSessionStatus.ConnectingEventSub => ConnectorState.Loading,
+        TwitchSessionStatus.SwitchingAccount => ConnectorState.Loading,
+        TwitchSessionStatus.Ready => ConnectorState.LoggedIn,
+        TwitchSessionStatus.Degraded => ConnectorState.LoggedIn,
+        TwitchSessionStatus.Error => ConnectorState.Error,
+        _ => ConnectorState.Error
+    };
 
     #region INotifyPropertyChanged
 
@@ -339,7 +402,50 @@ public sealed partial class TwitchService : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
-        _chatService.DisconnectAsync().Wait();
-        _eventSubService.StopAsync().Wait();
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _authCancellation?.Cancel();
+        _authCancellation?.Dispose();
+        _sessionCoordinator.StateChanged -= OnStateChanged;
+        _sessionCoordinator.SessionFaulted -= OnSessionFaulted;
+        GC.SuppressFinalize(this);
     }
+
+    private void RecordDiagnostic(
+        AppDiagnosticSeverity severity,
+        AppDiagnosticCategory category,
+        string summary,
+        string? detail = null,
+        Exception? exception = null,
+        AppDiagnosticVisibility visibility = AppDiagnosticVisibility.DiagnosticsOnly)
+    {
+        _diagnosticsService.Record(
+            AppDiagnosticSubsystem.Twitch,
+            severity,
+            category,
+            summary,
+            detail,
+            exception,
+            visibility);
+    }
+
+    private DiagnosticReportBuilder<TwitchService> Diagnostic() => _logger.Diagnostic(_diagnosticsService, AppDiagnosticSubsystem.Twitch);
+
+    private static AppDiagnosticCategory MapDiagnosticCategory(TwitchFailureKind kind) => kind switch
+    {
+        TwitchFailureKind.AuthValidation or TwitchFailureKind.AuthCancelled or TwitchFailureKind.CallbackListenerBind => AppDiagnosticCategory.Auth,
+        TwitchFailureKind.IdentityBootstrap or TwitchFailureKind.AccountReset => AppDiagnosticCategory.Persistence,
+        TwitchFailureKind.ChatTransport or TwitchFailureKind.EventSubTransport or TwitchFailureKind.EventSubSubscription => AppDiagnosticCategory.Connectivity,
+        TwitchFailureKind.RewardLoad => AppDiagnosticCategory.Configuration,
+        _ => AppDiagnosticCategory.InternalFault
+    };
+
+    private static AppDiagnosticVisibility MapDiagnosticVisibility(TwitchFailureKind kind) => kind switch
+    {
+        TwitchFailureKind.AuthValidation or TwitchFailureKind.RewardLoad or TwitchFailureKind.ChatTransport or TwitchFailureKind.EventSubTransport or TwitchFailureKind.EventSubSubscription => AppDiagnosticVisibility.StatusOnly,
+        TwitchFailureKind.AccountReset or TwitchFailureKind.Unknown => AppDiagnosticVisibility.Toast,
+        _ => AppDiagnosticVisibility.DiagnosticsOnly
+    };
 }

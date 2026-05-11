@@ -17,13 +17,36 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using TwitchLib.EventSub.Core.SubscriptionTypes.Channel;
-using YouTubeMusicStreamer.Services.Twitch.Implementations.EventArgs;
 
 namespace YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
+public interface ITwitchChatClient
+{
+    event EventHandler<TwitchChatConnectedEventArgs> Connected;
+    event EventHandler<TwitchChatJoinedChannelEventArgs> JoinedChannel;
+
+    bool IsConnected { get; }
+
+    void Initialize(string username, string token, string channelLogin);
+    void Connect();
+    void Disconnect();
+    void JoinChannel(string channelName);
+    void SendReply(string channelName, string messageId, string message);
+    void SendMessage(string channelName, string message);
+}
+
+public interface ITwitchChatClientFactory
+{
+    ITwitchChatClient Create();
+}
+
+public sealed record TwitchChatConnectedEventArgs;
+
+public sealed record TwitchChatJoinedChannelEventArgs(string Channel);
+
 public interface ITwitchChatService
 {
-    Task ConnectAsync(string username, string accessToken);
+    Task ConnectAsync(string username, string accessToken, string channelLogin);
     Task DisconnectAsync();
     void SendMessage(ChannelChatMessage senderMessage, string message, bool asReply = true);
 }

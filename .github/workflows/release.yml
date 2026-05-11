@@ -57,27 +57,6 @@ jobs:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
         run: .\scripts\prepare-build-env.ps1
 
-      - name: Set dynamic VPK env vars
-        shell: pwsh
-        run: |
-          $envBlock = @"
-          VPK_CHANNEL=$($Env:OS)-$($Env:ARCH)
-          VPK_RUNTIME=$($Env:OS)-$($Env:ARCH)
-          VPK_PACK_DIR=./publish/$($Env:OS)-$($Env:ARCH)
-          VPK_FRAMEWORK=webview2,net$($Env:DOTNET_VERSION)-$($Env:ARCH)-desktop
-          VPK_ICON=./$($Env:APP_NAME)/wwwroot/favicon.ico
-          VPK_SPLASH_IMAGE=./$($Env:APP_NAME)/Resources/Splash/splash.png
-          VPK_PACK_VERSION=$($Env:VERSION)
-          VPK_RELEASE_NAME=v$($Env:VERSION)
-          VPK_TAG=v$($Env:VERSION)
-          VPK_TARGET_COMMITISH=$($Env:GITHUB_SHA)
-          VPK_REPO_URL=https://github.com/$($Env:GITHUB_REPOSITORY)
-          VPK_PACK_ID=$($Env:APP_NAME)
-          VPK_MAIN_EXE=$($Env:APP_NAME).exe
-          "@
-          
-          Add-Content -Path $Env:GITHUB_ENV -Value $envBlock -Encoding utf8
-
 
       - name: Generate release notes
         shell: pwsh
@@ -95,9 +74,13 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
 
+      - name: Prepare publish assets
+        shell: pwsh
+        run: .\scripts\prepare-publish-assets.ps1
+
       - name: Publish .NET application
         shell: pwsh
-        run: dotnet publish -c Release -p:PublishProfile=${{ env.VPK_CHANNEL }}
+        run: dotnet publish YouTubeMusicStreamer/YouTubeMusicStreamer.csproj -c Release -p:PublishProfile=${{ env.VPK_CHANNEL }}
 
       - name: Install VPK tool
         shell: pwsh

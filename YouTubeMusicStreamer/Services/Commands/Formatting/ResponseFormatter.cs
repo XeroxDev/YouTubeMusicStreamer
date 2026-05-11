@@ -16,18 +16,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using System.Text;
+using System.Text.RegularExpressions;
 
 namespace YouTubeMusicStreamer.Services.Commands.Formatting;
 
-public class ResponseFormatter : IResponseFormatter
+public partial class ResponseFormatter : IResponseFormatter
 {
     public string Format(string template, IReadOnlyDictionary<string, string> vals)
     {
-        if (string.IsNullOrWhiteSpace(template)) return string.Empty;
-        var sb = new StringBuilder(template);
-        foreach (var kv in vals)
-            sb.Replace(kv.Key, kv.Value);
-        return sb.ToString();
+        if (string.IsNullOrWhiteSpace(template))
+            return string.Empty;
+
+        return PlaceholderRegex().Replace(template, match =>
+            vals.TryGetValue(match.Value, out var value)
+                ? value
+                : match.Value);
     }
+
+    [GeneratedRegex(@"\{[^{}]+\}")]
+    private static partial Regex PlaceholderRegex();
 }

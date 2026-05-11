@@ -17,69 +17,49 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using Microsoft.Extensions.Logging;
-using TwitchLib.Api;
-using TwitchLib.Api.Helix.Models.ChannelPoints;
-using TwitchLib.Api.Helix.Models.ChannelPoints.GetCustomReward;
-using YouTubeMusicStreamer.Services.Twitch.Implementations.EventArgs;
 using YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
 namespace YouTubeMusicStreamer.Services.Twitch.Implementations;
 
-public sealed class TwitchUserService(ILogger<TwitchUserService> logger, TwitchAPI api) : ITwitchUserService
+public sealed class TwitchUserService(ILogger<TwitchUserService> logger, ITwitchApiFactory apiFactory) : ITwitchUserService
 {
-    public string? Username { get; private set; }
-    public string? ChannelId { get; private set; }
-    public string? ProfileImageUrl { get; private set; }
-    private List<CustomReward> _rewards = [];
-    public IReadOnlyList<CustomReward> Rewards => _rewards;
-
-    public event EventHandler<UserInitializedEventArgs>? UserInitialized;
-
-    public async Task InitializeAsync()
+    public async Task<TwitchUserIdentity?> GetCurrentUserAsync(string accessToken)
     {
-        var response = await api.Helix.Users.GetUsersAsync();
-        var user = response?.Users.FirstOrDefault();
-        if (user != null)
+        var api = apiFactory.Create(accessToken);
+        var user = await api.GetCurrentUserAsync();
+        if (user is not null)
         {
-            Username = user.DisplayName;
-            ChannelId = user.Id;
-            ProfileImageUrl = user.ProfileImageUrl;
-            logger.LogInformation("User initialized {Username}", Username);
-            UserInitialized?.Invoke(this, new UserInitializedEventArgs(Username, ChannelId, ProfileImageUrl));
+            logger.LogInformation("User initialized {Username}", user.DisplayName);
+            return user;
         }
+
+        return null;
     }
 
-    public async Task RefreshRewardsAsync()
+    public async Task<IReadOnlyList<TwitchRewardSnapshot>> GetRewardsAsync(string accessToken, string channelId)
     {
-        if (string.IsNullOrWhiteSpace(ChannelId))
+        if (string.IsNullOrWhiteSpace(channelId))
         {
             logger.LogWarning("Cannot refresh rewards: ChannelId is null or empty");
-            _rewards = [];
-            return;
+            return [];
         }
 
-        GetCustomRewardsResponse? resp;
-
+        var api = apiFactory.Create(accessToken);
         try
         {
-            resp = await api.Helix.ChannelPoints.GetCustomRewardAsync(ChannelId);
+            var rewards = await api.GetRewardsAsync(channelId);
+            if (rewards.Count == 0)
+            {
+                logger.LogWarning("No channel points rewards found for {ChannelId}", channelId);
+            }
+
+            return rewards;
         }
         catch
         {
             // user has no channel points rewards configured or is not affiliated or something
-            logger.LogWarning("Failed to get channel points rewards for {ChannelId}", ChannelId);
-            _rewards = [];
-            return;
-        }
-
-        if (resp?.Data == null || resp.Data.Length == 0)
-        {
-            logger.LogWarning("No channel points rewards found for {ChannelId}", ChannelId);
-            _rewards = [];
-        }
-        else
-        {
-            _rewards = resp.Data.OrderBy(r => r.Title, StringComparer.OrdinalIgnoreCase).ToList();
+            logger.LogWarning("Failed to get channel points rewards for {ChannelId}", channelId);
+            return [];
         }
     }
 }
