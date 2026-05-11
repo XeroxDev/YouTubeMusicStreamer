@@ -4,7 +4,7 @@
 // YouTubeMusicStreamer is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version (the "AGPLv3").
+// (at your option) any later version.
 // 
 // YouTubeMusicStreamer is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,9 +17,7 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using System.Reflection;
-using TwitchLib.EventSub.Core.SubscriptionTypes.Channel;
 using YouTubeMusicStreamer.Attributes;
-using YouTubeMusicStreamer.Interfaces;
 
 namespace YouTubeMusicStreamer.Services.Commands.Placeholders;
 
@@ -31,30 +29,25 @@ public class ReflectionPlaceholderProvider : IPlaceholderProvider
         ["{bits}"] = "The total number of bits the user cheered"
     };
 
-    public IReadOnlyDictionary<string, string> GetPlaceholders(ICommand handler)
+    public IReadOnlyDictionary<string, string> GetPlaceholders(Type commandType, MethodInfo method)
     {
         var map = new Dictionary<string, string>(Global);
 
-        var type = handler.GetType();
-        var method = type.GetMethod("ExecuteCommandLogicAsync", BindingFlags.Instance | BindingFlags.NonPublic);
-        if (method is null) return map;
-
-        foreach (var p in method.GetParameters())
+        foreach (var parameter in method.GetParameters().Skip(1))
         {
-            if (p.ParameterType == typeof(ChannelChatMessage)) continue;
-            if (p.Name is not null && p.Name.Equals("bits", StringComparison.OrdinalIgnoreCase)) continue;
-
-            var key = "{" + p.Name?.ToLowerInvariant() + "}";
-            var desc = p.GetCustomAttribute<PlaceholderAttribute>()?.Description ?? $"Command argument '{p.Name}'";
+            var key = "{" + parameter.Name?.ToLowerInvariant() + "}";
+            var desc = parameter.GetCustomAttribute<PlaceholderAttribute>()?.Description ?? $"Command argument '{parameter.Name}'";
             map[key] = desc;
         }
 
-        var dataType = method.ReturnType.GetGenericArguments()[0].GetProperty("Data")!.PropertyType;
+        var dataType = Binding.CommandHandlerReflection.TryGetResultDataType(method);
+        if (dataType is null || dataType == typeof(object))
+            return map;
 
-        foreach (var prop in dataType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var property in dataType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            var key = "{" + prop.Name.ToLowerInvariant() + "}";
-            var desc = prop.GetCustomAttribute<PlaceholderAttribute>()?.Description ?? $"Result field '{prop.Name}'";
+            var key = "{" + property.Name.ToLowerInvariant() + "}";
+            var desc = property.GetCustomAttribute<PlaceholderAttribute>()?.Description ?? $"Result field '{property.Name}'";
             map[key] = desc;
         }
 

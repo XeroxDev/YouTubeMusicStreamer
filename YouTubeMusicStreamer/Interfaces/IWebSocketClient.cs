@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using YouTubeMusicStreamer.Services;
 using YouTubeMusicStreamer.Services.App;
 
 namespace YouTubeMusicStreamer.Interfaces;
@@ -33,7 +32,7 @@ public interface IWebSocketClient
 
 public abstract class WebSocketClientBase(IServiceProvider services, string name, string imagePath, string ratio = "3:1") : IWebSocketClient
 {
-    private SettingsService SettingsService => services.GetRequiredService<SettingsService>();
+    private IWidgetServerStatusSource WidgetServerStatus => services.GetRequiredService<IWidgetServerStatusSource>();
 
     public string Name { get; init; } = name;
     public string ImagePath { get; init; } = imagePath;
@@ -73,7 +72,7 @@ public abstract class WebSocketClientBase(IServiceProvider services, string name
               document.addEventListener('DOMContentLoaded', () => {
                   {{GetJs()}}
                   
-                  let ws = new WebSocket('ws://localhost:{{SettingsService.GetAppSettings().PublicPort}}/');
+                  let ws = new WebSocket('ws://localhost:{{WidgetServerStatus.State.Configuration.Port}}/');
                   
                   ws.onclose = (event) => {
                       ws = new WebSocket(event.target.url);

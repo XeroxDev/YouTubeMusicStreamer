@@ -16,13 +16,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using YouTubeMusicStreamer.Services.Twitch.Implementations.EventArgs;
-
 namespace YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
 public interface ITwitchTokenService
 {
     Task<bool> ValidateAsync(string token);
-    event EventHandler<TokenValidatedEventArgs> TokenValidated;
-    Task RefreshIfNeededAsync();
 }

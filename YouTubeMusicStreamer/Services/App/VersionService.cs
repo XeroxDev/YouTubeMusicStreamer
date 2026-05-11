@@ -16,39 +16,42 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-#if !DEBUG
-using Velopack.Sources;
-#else
-using Velopack.Locators;
-#endif
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Velopack;
-using YouTubeMusicStreamer.Utils;
+using YouTubeMusicStreamer.Services.App.Diagnostics;
 
 namespace YouTubeMusicStreamer.Services.App;
 
-public class VersionService
+public class VersionService : IVersionStatusSource
 {
     public enum UpdateStatus
     {
         Pending,
         Checking,
         UpToDate,
+        CheckFailed,
         Available,
         PendingRestart,
         NotInstalled
     }
 
-    private readonly UpdateManager _mgr;
+    private IAppUpdateManager? _mgr;
     private DateTime _lastCheckTime = DateTime.MinValue;
 
     private UpdateInfo? _updateInfo;
     private bool _isDownloading;
     private bool _isApplying;
+    private readonly ILogger<VersionService> _logger;
+    private readonly IAppDiagnosticsService _diagnosticsService;
+    private readonly IAppVersionSource _appVersionSource;
+    private readonly IAppUpdateManagerFactory _updateManagerFactory;
 
-    public bool IsInstalled => _mgr.IsInstalled;
-    public bool IsPortable => _mgr.IsPortable;
+    public bool IsInstalled => GetUpdateManager().IsInstalled;
+    public bool IsPortable => GetUpdateManager().IsPortable;
     public UpdateStatus Status { get; private set; } = UpdateStatus.Pending;
+    public bool WasLastCheckAttempted { get; private set; }
+    public Exception? LastCheckError { get; private set; }
     public bool IsBusy => _isDownloading || _isApplying;
     public bool SpinnerVisible => IsBusy || Status == UpdateStatus.Checking;
 
@@ -64,6 +67,7 @@ public class VersionService
             {
                 UpdateStatus.Pending or UpdateStatus.Checking => "Checking for updates…",
                 UpdateStatus.UpToDate => "Everything up to date",
+                UpdateStatus.CheckFailed => "Update check failed",
                 UpdateStatus.Available => $"New update available—v{UpdateVersion?.Version}",
                 UpdateStatus.PendingRestart => "Update downloaded, awaiting restart",
                 UpdateStatus.NotInstalled => "Code version—updates disabled",
@@ -94,48 +98,27 @@ public class VersionService
     private void Notify() => OnChange?.Invoke();
 
     public VersionService(
-#if !DEBUG
-        SettingsService settingsService
-#endif
-    )
+        ILogger<VersionService> logger,
+        IAppDiagnosticsService diagnosticsService,
+        IAppVersionSource appVersionSource,
+        IAppUpdateManagerFactory updateManagerFactory)
     {
-        var options = new UpdateOptions { AllowVersionDowngrade = true };
-#if DEBUG
-        var updatePath = Path.Combine(AppUtils.FilePath, "updates");
-        _mgr = new UpdateManager(
-            updatePath,
-            options,
-            new TestVelopackLocator(
-                "YouTubeMusicStreamer",
-                $"{GetInternalAppVersion()}-debug",
-                updatePath)
-        );
-#else
-        _mgr = new UpdateManager(
-            new GithubSource(
-                "https://github.com/XeroxDev/YouTubeMusicStreamer",
-                null,
-                settingsService.GetAppSettings().EnablePreRelease),
-            options
-        );
-#endif
+        _logger = logger;
+        _diagnosticsService = diagnosticsService;
+        _appVersionSource = appVersionSource;
+        _updateManagerFactory = updateManagerFactory;
     }
 
-    private static SemanticVersion GetInternalAppVersion()
+    private IAppUpdateManager GetUpdateManager()
     {
-        var versionString = AppInfo.Current.VersionString;
-        if (string.IsNullOrWhiteSpace(versionString))
-            return new SemanticVersion(0, 0, 0);
+        if (_mgr is not null)
+            return _mgr;
 
-        var parts = versionString.Split('.');
-        int major = 0, minor = 0, patch = 0;
-        if (parts.Length > 0 && int.TryParse(parts[0], out var m)) major = m;
-        if (parts.Length > 1 && int.TryParse(parts[1], out var n)) minor = n;
-        if (parts.Length > 2 && int.TryParse(parts[2], out var p)) patch = p;
-        return new SemanticVersion(major, minor, patch);
+        _mgr = _updateManagerFactory.Create(_appVersionSource.GetInternalAppVersion());
+        return _mgr;
     }
 
-    public SemanticVersion GetAppVersion() => _mgr.CurrentVersion ?? GetInternalAppVersion();
+    public SemanticVersion GetAppVersion() => GetUpdateManager().CurrentVersion ?? _appVersionSource.GetInternalAppVersion();
 
     public async Task InitializeIfNeededAsync()
     {
@@ -147,7 +130,12 @@ public class VersionService
 
     public async Task CheckForUpdatesAsync()
     {
-        if (!_mgr.IsInstalled)
+        WasLastCheckAttempted = true;
+        LastCheckError = null;
+
+        var updateManager = GetUpdateManager();
+
+        if (!updateManager.IsInstalled)
         {
             Status = UpdateStatus.NotInstalled;
             Notify();
@@ -162,8 +150,9 @@ public class VersionService
 
         await Task.Delay(1000);
 
-        if (_mgr.UpdatePendingRestart is { } pendingAsset)
+        if (updateManager.UpdatePendingRestart is { } pendingAsset)
         {
+            _updateInfo = new UpdateInfo(pendingAsset, false, null!, []);
             UpdateVersion = pendingAsset;
             Status = UpdateStatus.PendingRestart;
             Notify();
@@ -173,17 +162,18 @@ public class VersionService
         UpdateInfo? info;
         try
         {
-            info = await _mgr.CheckForUpdatesAsync();
+            info = await updateManager.CheckForUpdatesAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            Status = UpdateStatus.UpToDate;
-            Notify();
+            ApplyUpdateCheckFailure(ex);
             return;
         }
 
         if (info is null)
         {
+            _updateInfo = null;
+            UpdateVersion = null;
             Status = UpdateStatus.UpToDate;
             Notify();
             return;
@@ -193,6 +183,13 @@ public class VersionService
         UpdateVersion = info;
         Status = UpdateStatus.Available;
         Notify();
+    }
+
+    public Task SimulateUpdateCheckFailureAsync(string? detail = null)
+    {
+        var exception = new InvalidOperationException(detail ?? "Debug-simulated update check failure.");
+        ApplyUpdateCheckFailure(exception);
+        return Task.CompletedTask;
     }
 
     public async Task DownloadUpdatesAsync()
@@ -205,7 +202,7 @@ public class VersionService
 
         try
         {
-            await _mgr.DownloadUpdatesAsync(_updateInfo);
+            await GetUpdateManager().DownloadUpdatesAsync(_updateInfo);
             Status = UpdateStatus.PendingRestart;
             Notify();
         }
@@ -224,7 +221,23 @@ public class VersionService
         _isApplying = true;
         Notify();
 
-        _mgr.ApplyUpdatesAndRestart(_updateInfo);
+        GetUpdateManager().ApplyUpdatesAndRestart(_updateInfo);
         return Task.CompletedTask;
+    }
+
+    private void ApplyUpdateCheckFailure(Exception ex)
+    {
+        LastCheckError = ex;
+        _updateInfo = null;
+        UpdateVersion = null;
+        _logger.Diagnostic(_diagnosticsService, AppDiagnosticSubsystem.Updates)
+            .Warning(AppDiagnosticCategory.Update, "Update check failed")
+            .WithLogLevel(LogLevel.Error)
+            .WithDetail(ex.Message)
+            .WithException(ex)
+            .DiagnosticsOnly()
+            .Write();
+        Status = UpdateStatus.CheckFailed;
+        Notify();
     }
 }

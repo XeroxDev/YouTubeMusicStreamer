@@ -19,43 +19,107 @@
 using Microsoft.Extensions.Logging;
 using XeroxDev.YTMDesktop.Companion.Models.Output;
 using YouTubeMusicStreamer.Services.App;
+using YouTubeMusicStreamer.Services.App.Diagnostics;
 
 namespace YouTubeMusicStreamer.Services.YouTube;
 
-public class SongQueueService(SettingsService settingsService, ILogger<SongQueueService> logger)
+public class SongQueueService(
+    SettingsService settingsService,
+    IYtmPlaybackController playbackController,
+    ILogger<SongQueueService> logger,
+    IAppDiagnosticsService diagnosticsService)
 {
-    private TimeSpan _currentSongDuration;
-    private bool _isSwitchingSong;
+    private static readonly TimeSpan EndOfTrackWindow = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan PendingSwitchTimeout = TimeSpan.FromSeconds(10);
 
-    public async Task YouTubeStateChanged(YouTubeService youtubeService, StateOutput e)
+    private string? _endWindowVideoId;
+    private string? _pendingTargetVideoId;
+    private DateTimeOffset? _pendingTargetStartedAtUtc;
+
+    public async Task YouTubeStateChanged(StateOutput e)
     {
         try
         {
-            if (settingsService.GetAppSettings().Queue.Count == 0 || !settingsService.GetAppSettings().QueueActive) return;
+            var queue = settingsService.GetQueueItems();
+            var queueSettings = settingsService.GetQueueSettings();
+            var currentVideoId = e.Video.Id;
 
-            if (_isSwitchingSong)
+            if (!string.IsNullOrWhiteSpace(_pendingTargetVideoId))
             {
+                if (string.Equals(currentVideoId, _pendingTargetVideoId, StringComparison.Ordinal))
+                {
+                    await ConfirmPendingQueueAdvanceAsync(_pendingTargetVideoId);
+                    ResetPendingSwitch();
+                    _endWindowVideoId = currentVideoId;
+                    return;
+                }
+
+                if (_pendingTargetStartedAtUtc is not null &&
+                    DateTimeOffset.UtcNow - _pendingTargetStartedAtUtc > PendingSwitchTimeout)
+                {
+                    logger.Diagnostic(diagnosticsService, AppDiagnosticSubsystem.Commands)
+                        .Warning(AppDiagnosticCategory.Connectivity, "Timed out waiting for YTMDesktop to confirm queue switch.")
+                        .WithDetail($"Target video: {_pendingTargetVideoId}")
+                        .StatusOnly()
+                        .Write();
+                    ResetPendingSwitch();
+                }
+
                 return;
             }
 
-            _currentSongDuration = TimeSpan.FromSeconds(e.Video.DurationSeconds);
+            if (queue.Count == 0 || !queueSettings.QueueActive)
+            {
+                _endWindowVideoId = null;
+                return;
+            }
+
+            if (!string.Equals(_endWindowVideoId, currentVideoId, StringComparison.Ordinal))
+                _endWindowVideoId = null;
+
+            var currentSongDuration = TimeSpan.FromSeconds(e.Video.DurationSeconds);
             var currentTime = TimeSpan.FromSeconds(e.Player.VideoProgress);
 
-            if (_currentSongDuration - currentTime > TimeSpan.FromSeconds(3)) return;
+            if (currentSongDuration - currentTime > EndOfTrackWindow)
+                return;
 
-            var nextSong = settingsService.GetAppSettings().Queue.FirstOrDefault();
-            if (nextSong is null) return;
-            _isSwitchingSong = true;
-            await youtubeService.RestClient!.ChangeVideo(nextSong.Id);
-            await settingsService.SaveAppSettingAsync(settings => { settings.Queue.RemoveAt(0); });
-            
-            // Wait 3 seconds before allowing the next song to be switched
-            await Task.Delay(3000);
-            _isSwitchingSong = false;
+            if (string.Equals(_endWindowVideoId, currentVideoId, StringComparison.Ordinal))
+                return;
+
+            var nextSong = queue.FirstOrDefault();
+            if (nextSong is null)
+                return;
+
+            _endWindowVideoId = currentVideoId;
+            await playbackController.ChangeVideoAsync(nextSong.Id);
+            _pendingTargetVideoId = nextSong.Id;
+            _pendingTargetStartedAtUtc = DateTimeOffset.UtcNow;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while switching songs");
+            logger.Diagnostic(diagnosticsService, AppDiagnosticSubsystem.Commands)
+                .Error(AppDiagnosticCategory.InternalFault, "An error occurred while switching queued songs.")
+                .WithDetail(ex.Message)
+                .WithException(ex)
+                .StatusOnly()
+                .Write();
+            ResetPendingSwitch();
         }
+    }
+
+    private async Task ConfirmPendingQueueAdvanceAsync(string targetVideoId)
+    {
+        await settingsService.UpdateQueueItemsAsync(items =>
+        {
+            var index = items.FindIndex(item => string.Equals(item.Id, targetVideoId, StringComparison.Ordinal));
+            if (index >= 0)
+                items.RemoveAt(index);
+        });
+    }
+
+    private void ResetPendingSwitch()
+    {
+        _pendingTargetVideoId = null;
+        _pendingTargetStartedAtUtc = null;
     }
 }

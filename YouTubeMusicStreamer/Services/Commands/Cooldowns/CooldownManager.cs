@@ -17,17 +17,26 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using System.Collections.Concurrent;
+using YouTubeMusicStreamer.Services.App.Persistence;
 
 namespace YouTubeMusicStreamer.Services.Commands.Cooldowns;
 
 public class CooldownManager : ICooldownManager
 {
     private readonly ConcurrentDictionary<string, DateTime> _last = new();
+    private long _pruneCounter;
 
-    public bool TryStart(string key, uint secs, out int wait)
+    public bool TryStart(string commandKey, string executorUserId, CommandCooldownScope cooldownScope, uint secs, out int wait)
     {
         wait = 0;
         if (secs <= 0) return true;
+
+        if (Interlocked.Increment(ref _pruneCounter) % 128 == 0)
+            PruneExpiredEntries();
+
+        var key = cooldownScope == CommandCooldownScope.PerUser
+            ? $"{commandKey}:{executorUserId}"
+            : commandKey;
 
         var prev = _last.GetOrAdd(key, DateTime.MinValue);
         var elapsed = (DateTime.UtcNow - prev).TotalSeconds;
@@ -39,5 +48,15 @@ public class CooldownManager : ICooldownManager
 
         _last[key] = DateTime.UtcNow;
         return true;
+    }
+
+    private void PruneExpiredEntries()
+    {
+        var cutoff = DateTime.UtcNow.AddHours(-6);
+        foreach (var entry in _last)
+        {
+            if (entry.Value < cutoff)
+                _last.TryRemove(entry.Key, out _);
+        }
     }
 }

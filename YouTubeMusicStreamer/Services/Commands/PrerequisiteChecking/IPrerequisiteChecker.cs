@@ -17,11 +17,11 @@
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
 using TwitchLib.EventSub.Core.SubscriptionTypes.Channel;
-using YouTubeMusicStreamer.Models;
+using YouTubeMusicStreamer.Services.App.Persistence;
 
 namespace YouTubeMusicStreamer.Services.Commands.PrerequisiteChecking;
 
 public interface IPrerequisiteChecker
 {
-    bool CanRun(ChannelChatMessage msg, CommandSettings settings, int bits);
+    CommandEligibilityResult Evaluate(ChannelChatMessage msg, CommandConfigurationSnapshot settings, int bits, CommandInvocationKind invocationKind);
 }

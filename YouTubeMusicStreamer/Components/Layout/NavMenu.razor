@@ -26,7 +26,7 @@
             </NavLink>
         </li>
 
-        @if (_isDebug)
+        @if (IsDebugBuild)
         {
             <li>
                 <NavLink ActiveClass="is-active" href="/debug">
@@ -45,3 +45,12 @@
     </ul>
 
 </aside>
+
+@code {
+    private static readonly bool IsDebugBuild =
+#if DEBUG
+        true;
+#else
+        false;
+#endif
+}

@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using YouTubeMusicStreamer.Models;
 using YouTubeMusicStreamer.Services.App;
@@ -24,25 +23,25 @@ using static System.Globalization.DateTimeStyles;
 
 namespace YouTubeMusicStreamer.Components.Pages.About;
 
-public partial class About(VersionService versionService) : ComponentBase
+public partial class About(VersionService versionService, IAboutAssetService aboutAssetService) : ComponentBase, IDisposable
 {
-    private static JsonSerializerOptions JsonSerializerOptions => new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private readonly IAboutAssetService _aboutAssetService = aboutAssetService;
 
     private static string? _licenseContent;
 
     private static string? _additionalPermissionsContent;
 
     private static IReadOnlyList<ThirdPartyLicense> _thirdPartyLicenses = [];
+    private static bool _thirdPartyLicensesLoaded;
+    private static string? _thirdPartyLicensesError;
+    private static string? _thirdPartyLicenseActionError;
 
 
     private static string BuildTime => DateTime.Parse(GeneratedBuildInfo.BuildTime, null, RoundtripKind).ToLocalTime().ToString("g");
 
     protected override async Task OnInitializedAsync()
     {
-        versionService.OnChange += StateHasChanged;
+        versionService.OnChange += OnVersionServiceChanged;
         await versionService.InitializeIfNeededAsync();
         
         await OpenLicenseFileAsync();
@@ -52,19 +51,20 @@ public partial class About(VersionService versionService) : ComponentBase
 
     public void Dispose()
     {
-        versionService.OnChange -= StateHasChanged;
+        versionService.OnChange -= OnVersionServiceChanged;
+        GC.SuppressFinalize(this);
     }
 
-    private static async Task OpenLicenseFileAsync()
+    private void OnVersionServiceChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task OpenLicenseFileAsync()
     {
         if (!string.IsNullOrEmpty(_licenseContent))
             return;
         
         try
         {
-            var stream = await FileSystem.OpenAppPackageFileAsync("LICENSE");
-            using var reader = new StreamReader(stream);
-            _licenseContent = await reader.ReadToEndAsync();
+            _licenseContent = await _aboutAssetService.ReadPackagedTextAsync("LICENSE");
         }
         catch
         {
@@ -72,16 +72,14 @@ public partial class About(VersionService versionService) : ComponentBase
         }
     }
 
-    private static async Task OpenAdditionalPermissionsFileAsync()
+    private async Task OpenAdditionalPermissionsFileAsync()
     {
         if (!string.IsNullOrEmpty(_additionalPermissionsContent))
             return;
         
         try
         {
-            var stream = await FileSystem.OpenAppPackageFileAsync("ADDITIONAL-PERMISSIONS");
-            using var reader = new StreamReader(stream);
-            _additionalPermissionsContent = await reader.ReadToEndAsync();
+            _additionalPermissionsContent = await _aboutAssetService.ReadPackagedTextAsync("ADDITIONAL-PERMISSIONS");
         }
         catch
         {
@@ -89,21 +87,47 @@ public partial class About(VersionService versionService) : ComponentBase
         }
     }
 
-    private static async Task OpenThirdPartyLicensesFileAsync()
+    private async Task OpenThirdPartyLicensesFileAsync()
     {
-        if (_thirdPartyLicenses.Count > 0)
+        if (_thirdPartyLicensesLoaded)
             return;
         
         try
         {
-            var stream = await FileSystem.OpenAppPackageFileAsync("third-party-licenses.json");
-            using var reader = new StreamReader(stream);
-            var json = await reader.ReadToEndAsync();
-            _thirdPartyLicenses = JsonSerializer.Deserialize<IReadOnlyList<ThirdPartyLicense>>(json, JsonSerializerOptions) ?? [];
+            _thirdPartyLicenses = await _aboutAssetService.LoadThirdPartyLicensesAsync();
+            _thirdPartyLicensesError = null;
+            _thirdPartyLicenseActionError = null;
         }
-        catch
+        catch (Exception ex)
         {
             _thirdPartyLicenses = [];
+            _thirdPartyLicensesError = $"Failed to load packaged third-party licenses: {ex.Message}";
         }
+        finally
+        {
+            _thirdPartyLicensesLoaded = true;
+        }
+    }
+
+    private async Task OpenThirdPartyLicenseAsync(ThirdPartyLicense license)
+    {
+        if (string.IsNullOrWhiteSpace(license.LocalLicensePath))
+        {
+            _thirdPartyLicenseActionError = "No packaged local license file is available for this package.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        try
+        {
+            await _aboutAssetService.OpenPackagedLicenseAsync(license);
+            _thirdPartyLicenseActionError = null;
+        }
+        catch (Exception ex)
+        {
+            _thirdPartyLicenseActionError = $"Failed to open packaged license file: {ex.Message}";
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 }

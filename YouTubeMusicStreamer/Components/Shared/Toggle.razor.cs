@@ -47,4 +47,5 @@ public partial class Toggle
     [Parameter] public string DivCssClass { get; set; } = "field";
     [Parameter] public string LabelCssClass { get; set; } = string.Empty;
     [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    [Parameter] public bool Disabled { get; set; }
 }

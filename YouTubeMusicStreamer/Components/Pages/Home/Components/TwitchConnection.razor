@@ -1,5 +1,6 @@
 ﻿@using YouTubeMusicStreamer.Enums
-@if (TwitchService.State == ConnectorState.Loading)
+@using YouTubeMusicStreamer.Services.Twitch
+@if (IsStartupRestoringTwitch || TwitchService.State == ConnectorState.Loading)
 {
     <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
         <div class="has-text-centered">
@@ -14,32 +15,31 @@
 @if (TwitchService.State != ConnectorState.LoggedIn)
 {
     <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
-        @if (TwitchService.State == ConnectorState.LoggedIn)
-        {
-            <h4 class="has-text-centered">Connected to Twitch</h4>
-        }
-        else
-        {
-            <h4 class="has-text-centered">Not connected to Twitch</h4>
-        }
+        <h4 class="has-text-centered">Not connected to Twitch</h4>
 
-        <button @onclick="StartOAuthFlow" class="button has-background-twitch mt-4 is-large is-responsive is-flex is-justify-content-center is-align-items-center"
-                disabled="@(TwitchService.State == ConnectorState.LoggingIn)">
-            @if (TwitchService.State != ConnectorState.LoggingIn)
-            {
+        @if (!TwitchService.IsAuthInProgress)
+        {
+            <button @onclick="StartOAuthFlow" class="button has-background-twitch mt-4 is-large is-responsive is-flex is-justify-content-center is-align-items-center">
                 <span class="icon is-small">
                     <i class="brand-icon">twitch</i>
                 </span>
                 <span>Login with Twitch</span>
-            }
-            else
-            {
+            </button>
+        }
+        else
+        {
+            <button @onclick="CancelAuth" class="button is-light mt-4 is-large is-responsive is-flex is-justify-content-center is-align-items-center">
                 <span class="icon is-small">
-                    <i class="mat-icon a-rotate">progress_activity</i>
+                    <i class="mat-icon">close</i>
                 </span>
-                <span>Waiting for authentication</span>
-            }
-        </button>
+                <span>Cancel authentication</span>
+            </button>
+            <p class="help mt-3">
+                Waiting for
+                @(TwitchService.PendingAuthRole == TwitchAccountRole.Bot ? "bot" : "broadcaster")
+                authentication in the browser.
+            </p>
+        }
     </div>
 
     return;
@@ -47,17 +47,60 @@
 
 <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center">
     <h4 class="has-text-centered has-text-success">Connected to Twitch</h4>
-    <div class="media mt-4">
-        <div class="media-left">
-            <figure class="image is-48x48">
-                <img
-                    src="@TwitchService.ProfileImageUrl"
-                    alt="@TwitchService.Username"/>
-            </figure>
+    <div class="content mt-4" style="width: 100%; max-width: 34rem;">
+        <p class="heading mb-3">Broadcaster</p>
+        <div class="media">
+            <div class="media-left">
+                <figure class="image is-48x48">
+                    <img
+                        src="@TwitchService.ProfileImageUrl"
+                        alt="@TwitchService.Username"/>
+                </figure>
+            </div>
+            <div class="media-content">
+                <p class="title is-4 mb-1">@TwitchService.Username</p>
+                <p class="subtitle is-6 mb-2">Owns rewards, EventSub, and channel identity.</p>
+                <p class="subtitle is-6">Not @(TwitchService.Username)? <a @onclick="Logout">Log out</a></p>
+            </div>
         </div>
-        <div class="media-content">
-            <p class="title is-4">@TwitchService.Username</p>
-            <p class="subtitle is-6">Not @(TwitchService.Username)? <a @onclick="Logout">Log out</a></p>
-        </div>
+
+        <hr />
+
+        <p class="heading mb-3">Bot</p>
+        @if (!string.IsNullOrWhiteSpace(TwitchService.BotUsername))
+        {
+            <div class="media">
+                <div class="media-left">
+                    <figure class="image is-48x48">
+                        <img
+                            src="@TwitchService.BotProfileImageUrl"
+                            alt="@TwitchService.BotUsername"/>
+                    </figure>
+                </div>
+                <div class="media-content">
+                    <p class="title is-4 mb-1">@TwitchService.BotUsername</p>
+                    <p class="subtitle is-6 mb-3">Used for chat messages and replies.</p>
+                    <button @onclick="DisconnectBot" class="button is-light is-responsive">
+                        Disconnect Bot
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="subtitle is-6 mb-3">No bot connected. Chat falls back to the broadcaster account.</p>
+            <button @onclick="StartBotOAuthFlow" class="button has-background-twitch is-responsive">
+                <span class="icon is-small">
+                    <i class="brand-icon">twitch</i>
+                </span>
+                <span>Connect Bot</span>
+            </button>
+        }
+
+        <hr />
+        <p class="help has-text-centered">
+            Effective chat identity:
+            <code>@TwitchService.EffectiveChatRole @EffectiveChatIdentitySuffix</code>
+        </p>
     </div>
 </div>

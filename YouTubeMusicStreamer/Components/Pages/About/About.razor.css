@@ -48,6 +48,11 @@
     color: var(--bulma-info-on-scheme);
 }
 
+.update-checkfailed {
+    background-color: rgba(255, 159, 10, 0.2);
+    color: var(--bulma-warning-on-scheme);
+}
+
 .update-error,.update-notinstalled {
     background-color: rgba(255, 56, 96, 0.2);
     color: var(--bulma-danger-on-scheme);

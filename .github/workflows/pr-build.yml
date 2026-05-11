@@ -8,11 +8,15 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ x64, x86, arm64 ]
     env:
       OS: win
       APP_NAME: YouTubeMusicStreamer
       DOTNET_VERSION: "9.0"
-      ARCH: x64
+      ARCH: ${{ matrix.arch }}
       RELEASE_NOTES_FILE: release-notes.md
       VPK_OUTPUT_DIR: Releases
       VPK_PACK_AUTHORS: XeroxDev
@@ -24,29 +28,9 @@ jobs:
         shell: pwsh
         env:
           GITHUB_SHA: ${{ github.sha }}
-          TWITCH_CLIENT_ID: pr-build
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID || 'pr-build' }}
+          VERSION_SUFFIX: -ci.${{ github.run_number }}
         run: .\scripts\prepare-build-env.ps1
-
-      - name: Set dynamic VPK env vars
-        shell: pwsh
-        run: |
-          $envBlock = @"
-          VPK_CHANNEL=$($Env:OS)-$($Env:ARCH)
-          VPK_RUNTIME=$($Env:OS)-$($Env:ARCH)
-          VPK_PACK_DIR=./publish/$($Env:OS)-$($Env:ARCH)
-          VPK_FRAMEWORK=webview2,net$($Env:DOTNET_VERSION)-$($Env:ARCH)-desktop
-          VPK_ICON=./$($Env:APP_NAME)/wwwroot/favicon.ico
-          VPK_SPLASH_IMAGE=./$($Env:APP_NAME)/Resources/Splash/splash.png
-          VPK_PACK_VERSION=$($Env:VERSION)
-          VPK_RELEASE_NAME=v$($Env:VERSION)
-          VPK_TAG=v$($Env:VERSION)
-          VPK_TARGET_COMMITISH=$($Env:GITHUB_SHA)
-          VPK_REPO_URL=https://github.com/$($Env:GITHUB_REPOSITORY)
-          VPK_PACK_ID=$($Env:APP_NAME)
-          VPK_MAIN_EXE=$($Env:APP_NAME).exe
-          "@
-          
-          Add-Content -Path $Env:GITHUB_ENV -Value $envBlock -Encoding utf8
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -59,5 +43,58 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
 
+      - name: Run tests
+        run: dotnet test YouTubeMusicStreamer.Tests/YouTubeMusicStreamer.Tests.csproj
+
+      - name: Prepare publish assets
+        shell: pwsh
+        run: .\scripts\prepare-publish-assets.ps1
+
       - name: Publish
         run: dotnet publish YouTubeMusicStreamer/YouTubeMusicStreamer.csproj -c Release -p:PublishProfile=${{ env.VPK_CHANNEL }}
+
+      - name: Install VPK tool
+        shell: pwsh
+        run: dotnet tool install -g vpk
+
+      - name: VPK pack
+        shell: pwsh
+        run: |
+          # assemble the mandatory args
+          $args = @(
+            '--outputDir';   $Env:VPK_OUTPUT_DIR
+            '--channel';     $Env:VPK_CHANNEL
+            '--runtime';     $Env:VPK_RUNTIME
+            '--packId';      $Env:VPK_PACK_ID
+            '--packVersion'; $Env:VPK_PACK_VERSION
+            '--packDir';     $Env:VPK_PACK_DIR
+            '--packAuthors'; $Env:VPK_PACK_AUTHORS
+            '--packTitle';   $Env:VPK_PACK_TITLE
+            '--icon';        $Env:VPK_ICON
+            '--mainExe';     $Env:VPK_MAIN_EXE
+            '--framework';   $Env:VPK_FRAMEWORK
+            '--splashImage'; $Env:VPK_SPLASH_IMAGE
+          )
+          
+          # run the pack
+          Write-Host "Running: vpk pack $($args -join ' ')"
+          vpk pack @args
+
+          # Extract portable zip to avoid zip-in-zip in GitHub Artifacts
+          $portableZip = Get-ChildItem -Path "$Env:VPK_OUTPUT_DIR/*-Portable.zip" | Select-Object -First 1
+          if ($portableZip) {
+            Write-Host "📦 Extracting $($portableZip.Name) for artifact upload..."
+            Expand-Archive -Path $portableZip.FullName -DestinationPath "$Env:VPK_OUTPUT_DIR/Portable"
+          }
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: YouTubeMusicStreamer-Installer-${{ matrix.arch }}
+          path: ${{ env.VPK_OUTPUT_DIR }}/*-Setup.exe
+
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: YouTubeMusicStreamer-Portable-${{ matrix.arch }}
+          path: ${{ env.VPK_OUTPUT_DIR }}/Portable

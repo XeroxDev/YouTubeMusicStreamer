@@ -16,21 +16,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
+using System.Collections.ObjectModel;
+
 namespace YouTubeMusicStreamer.Services.Commands.Binding;
 
-public class BoundCommandResult(bool success, object? data, IReadOnlyDictionary<string, string> argValues)
+public sealed class BoundCommandResult(
+    ICommandResult result,
+    IReadOnlyDictionary<string, string> argValues)
 {
-    /// <summary>True if the command logic succeeded.</summary>
-    public bool Success { get; } = success;
-
-    /// <summary>
-    /// The strongly-typed DTO your command returned (or null).
-    /// </summary>
-    public object? Data { get; } = data;
-
-    /// <summary>
-    /// Maps each method-parameter (except ChatMessage and bits) to its stringifies value.
-    /// Keys include the {braces}.
-    /// </summary>
-    public IReadOnlyDictionary<string, string> ArgValues { get; } = argValues;
+    public ICommandResult Result { get; } = result;
+    public IReadOnlyDictionary<string, string> ArgValues { get; } =
+        new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(argValues));
 }

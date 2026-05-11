@@ -16,29 +16,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
-using Blazored.Toast.Services;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Components;
-using WinRT.Interop;
 using YouTubeMusicStreamer.Interfaces;
 using YouTubeMusicStreamer.Models;
 using YouTubeMusicStreamer.Services;
 using YouTubeMusicStreamer.Services.App;
+using YouTubeMusicStreamer.Services.App.Persistence;
 using YouTubeMusicStreamer.Services.WebSocket;
-using WebSocketService = YouTubeMusicStreamer.Services.WebSocket.WebSocketService;
+using YouTubeMusicStreamer.Services.YouTube;
 
 namespace YouTubeMusicStreamer.Components.Pages.YTMDesktop;
 
-public partial class YTMDesktop : ComponentBase
+public partial class YTMDesktop : ComponentBase, IDisposable
 {
     #region Page Properties
 
     private readonly SettingsService _settingsService;
     private readonly WebSocketClientService _webSocketClientService;
-    private readonly IToastService _toastService;
-    private readonly WebSocketService _webSocketService;
+    private readonly IAppToastService _toastService;
+    private readonly YtmDesktopFacade _ytmDesktopFacade;
+    private readonly IYtmDesktopClientExportService _clientExportService;
 
     #endregion
 
@@ -59,25 +57,41 @@ public partial class YTMDesktop : ComponentBase
 
     #endregion
 
-    public YTMDesktop(SettingsService settingsService, WebSocketClientService webSocketClientService, WebSocketService webSocketService, IToastService toastService)
+    public YTMDesktop(
+        SettingsService settingsService,
+        WebSocketClientService webSocketClientService,
+        IAppToastService toastService,
+        YtmDesktopFacade ytmDesktopFacade,
+        IYtmDesktopClientExportService clientExportService)
     {
         _settingsService = settingsService;
         _webSocketClientService = webSocketClientService;
-        _webSocketService = webSocketService;
         _toastService = toastService;
+        _ytmDesktopFacade = ytmDesktopFacade;
+        _clientExportService = clientExportService;
         ResetGlobalSettings(false);
+    }
+
+    protected override void OnInitialized()
+    {
+        _ytmDesktopFacade.Initialize();
+        _ytmDesktopFacade.StateChanged += OnFacadeStateChanged;
+    }
+
+    public void Dispose()
+    {
+        _ytmDesktopFacade.StateChanged -= OnFacadeStateChanged;
+        _ytmDesktopFacade.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task SaveGlobalSettings()
     {
-        await _settingsService.SaveAppSettingAsync(s =>
-        {
-            s.AutoStartServer = _autoStartServer;
-            s.PublicPort = _serverPort;
-            s.AutoStartServer = _autoStartServer;
-            s.AllowAudioCapture = _allowAudioStream;
-            s.AudioCaptureDevice = _audioDeviceId;
-        });
+        await _ytmDesktopFacade.SaveServerSettingsAsync(
+            _autoStartServer,
+            _serverPort,
+            _allowAudioStream,
+            _audioDeviceId);
 
         _toastService.ShowSuccess("Settings saved successfully.");
     }
@@ -85,11 +99,11 @@ public partial class YTMDesktop : ComponentBase
     private void ResetGlobalSettings(bool notify = true)
     {
         _clientTheme = _webSocketClientService.GetAvailableClients().FirstOrDefault()?.Name ?? string.Empty;
-        _autoStartServer = _settingsService.GetAppSettings().AutoStartServer;
-        _serverPort = _settingsService.GetAppSettings().PublicPort;
-        _autoStartServer = _settingsService.GetAppSettings().AutoStartServer;
-        _allowAudioStream = _settingsService.GetAppSettings().AllowAudioCapture;
-        _audioDeviceId = _settingsService.GetAppSettings().AudioCaptureDevice;
+        var settings = _settingsService.GetYouTubeSettings();
+        _autoStartServer = settings.AutoStartServer;
+        _serverPort = settings.PublicPort;
+        _allowAudioStream = settings.AllowAudioCapture;
+        _audioDeviceId = settings.AudioCaptureDevice;
 
         if (notify)
         {
@@ -99,70 +113,76 @@ public partial class YTMDesktop : ComponentBase
 
     private async Task GenerateClient()
     {
-        // ask user for location to save client to
-        var fileSavePicker = new FileSavePicker
+        var result = await _clientExportService.ExportAsync(_clientTheme);
+        if (result.Outcome is YtmDesktopClientExportOutcome.Cancelled or YtmDesktopClientExportOutcome.NoThemeSelected)
+            return;
+
+        if (result.Outcome == YtmDesktopClientExportOutcome.ClientNotFound)
         {
-            SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-            SuggestedFileName = _clientTheme,
-            DefaultFileExtension = ".html",
-            FileTypeChoices =
-            {
-                { "HTML File", new List<string> { ".html" } }
-            }
-        };
-
-        if (MauiWinUIApplication.Current.Application.Windows[0].Handler?.PlatformView is MauiWinUIWindow window)
-            InitializeWithWindow.Initialize(fileSavePicker, window.WindowHandle);
-
-        var file = await fileSavePicker.PickSaveFileAsync();
-
-        if (file is null || string.IsNullOrWhiteSpace(_clientTheme))
-        {
+            _toastService.ShowError("The selected client theme is no longer available.");
             return;
         }
-
-        var clientContent = _webSocketClientService.GetClient(_clientTheme)?.Build();
-        await FileIO.WriteTextAsync(file, clientContent, UnicodeEncoding.Utf8);
 
         _toastService.ShowSuccess("Client generated successfully.");
     }
 
-    private List<IWebSocketClient> GetWebSocketClients() => _webSocketClientService.GetAvailableClients();
+    private IReadOnlyList<IWebSocketClient> GetWebSocketClients() => _webSocketClientService.GetAvailableClients();
 
     private IWebSocketClient? GetWebSocketClient(string? name) => string.IsNullOrWhiteSpace(name) ? null : _webSocketClientService.GetClient(name);
 
     private async Task ToggleServer()
     {
-        if (_webSocketService.IsRunning)
-            _webSocketService.Stop();
-        else
-            await _webSocketService.StartAsync();
+        await _ytmDesktopFacade.ToggleServerAsync();
     }
+
+    private void OnFacadeStateChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    private WidgetServerStatus EffectiveServerStatus =>
+        YtmDesktopStatusPresenter.GetEffectiveServerStatus(_ytmDesktopFacade.ServerState, _ytmDesktopFacade.CompanionState);
+
+    private string ServerStatusLabel => YtmDesktopStatusPresenter.GetServerStatusLabel(EffectiveServerStatus);
+
+    private string ServerStatusTagClass => YtmDesktopStatusPresenter.GetServerStatusTagClass(EffectiveServerStatus);
+
+    private bool IsAudioConfiguredButInactive =>
+        YtmDesktopStatusPresenter.IsAudioConfiguredButInactive(_ytmDesktopFacade.ServerState);
+
+    private string AudioStatusLabel => YtmDesktopStatusPresenter.GetAudioStatusLabel(_ytmDesktopFacade.ServerState);
+
+    private string AudioStatusTagClass => YtmDesktopStatusPresenter.GetAudioStatusTagClass(_ytmDesktopFacade.ServerState);
+
+    private string? ServerStatusMessage => YtmDesktopStatusPresenter.GetServerStatusMessage(_ytmDesktopFacade.ServerState, EffectiveServerStatus);
+
+    private bool IsServerStatusProblem =>
+        YtmDesktopStatusPresenter.IsServerStatusProblem(EffectiveServerStatus);
+
+    private string? AudioStatusMessage => YtmDesktopStatusPresenter.GetAudioStatusMessage(_ytmDesktopFacade.ServerState);
+
+    private bool IsAudioStatusProblem =>
+        YtmDesktopStatusPresenter.IsAudioStatusProblem(_ytmDesktopFacade.ServerState);
 
     private async Task RemoveBlacklistEntry(BlacklistEntry entry)
     {
-        await _settingsService.SaveAppSettingAsync(s => s.Blacklist.Remove(entry));
+        await _settingsService.UpdateBlacklistEntriesAsync(entries => entries.RemoveAll(x => x.Url == entry.Url && x.Description == entry.Description));
         _toastService.ShowSuccess("Blacklist entry removed successfully.");
     }
 
     private async Task AddBlacklistEntry()
     {
-        if (string.IsNullOrWhiteSpace(_blacklistUrl))
+        var result = YtmDesktopBlacklistState.TryCreateEntry(_blacklistUrl, _blacklistDescription);
+        if (result.Error == BlacklistEntryValidationError.MissingUrl)
         {
             _toastService.ShowError("Please fill out the URL field.");
             return;
         }
 
-        // validate URL
-        if (!Uri.TryCreate(_blacklistUrl, UriKind.Absolute, out _))
+        if (result.Error == BlacklistEntryValidationError.InvalidUrl)
         {
             _toastService.ShowError("Invalid URL provided.");
             return;
         }
 
-        var entry = new BlacklistEntry(new Uri(_blacklistUrl), _blacklistDescription);
-
-        await _settingsService.SaveAppSettingAsync(s => s.Blacklist.Add(entry));
+        await _settingsService.UpdateBlacklistEntriesAsync(entries => entries.Add(result.Entry!));
 
         _blacklistUrl = string.Empty;
         _blacklistDescription = string.Empty;

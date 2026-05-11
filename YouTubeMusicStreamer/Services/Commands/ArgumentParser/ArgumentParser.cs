@@ -25,6 +25,9 @@ public partial class ArgumentParser : IArgumentParser
 {
     public IReadOnlyList<string> Parse(ChannelChatMessage msg, string prefix, string trigger)
     {
+        if (msg.Message is null)
+            return [];
+
         var raw = string.Concat(
             msg.Message.Fragments
                 .Where(f => f.Type == "text")
@@ -44,7 +47,7 @@ public partial class ArgumentParser : IArgumentParser
     }
 
     [GeneratedRegex("""
-                    "[^"]+"|\S+
+                    "[^"]*"|\S+
                     """, RegexOptions.Compiled)]
     private static partial Regex TokenRegex();
 }

@@ -1,5 +1,6 @@
 ﻿@page "/ytmdesktop"
 @using YouTubeMusicStreamer.Components.Pages.YTMDesktop.Components
+@using YouTubeMusicStreamer.Services.WebSocket
 
 <PageHeader Title="YTMDesktop Settings" SubTitle="Here you can configure your YTMDesktop specific settings."></PageHeader>
 
@@ -10,6 +11,25 @@
                 <div class="content is-flex is-flex-direction-column is-gap-1">
                     <div class="columns">
                         <div class="field column">
+                            <label class="label">Widget Server</label>
+                            <span class="@ServerStatusTagClass">@ServerStatusLabel</span>
+                            @if (!string.IsNullOrWhiteSpace(ServerStatusMessage))
+                            {
+                                <p class="help @(IsServerStatusProblem ? "has-text-warning" : string.Empty) mt-2">@ServerStatusMessage</p>
+                            }
+                        </div>
+                        <div class="field column">
+                            <label class="label">Audio Capture</label>
+                            <span class="@AudioStatusTagClass">@AudioStatusLabel</span>
+                            @if (!string.IsNullOrWhiteSpace(AudioStatusMessage))
+                            {
+                                <p class="help @(IsAudioStatusProblem ? "has-text-danger" : string.Empty) mt-2">@AudioStatusMessage</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                        <div class="field column">
                             <label class="label">Auto Start</label>
                             <div class="control is-expanded">
                                 <Toggle @bind-Value="_autoStartServer" OffLabel="Disabled" OnLabel="Enabled"/>
@@ -18,11 +38,11 @@
                             <p class="help">Default: <code>Disabled</code></p>
 
                             <div class="control">
-                                <button class="button @(_webSocketService.IsRunning ? "is-danger" : "is-success")" @onclick="ToggleServer">
+                                <button class="button @(_ytmDesktopFacade.ServerState.Status is WidgetServerStatus.Running or WidgetServerStatus.Degraded ? "is-danger" : "is-success")" @onclick="ToggleServer">
                                     <span class="icon is-small">
-                                        <i class="mat-icon">@(_webSocketService.IsRunning ? "stop" : "play_arrow")</i>
+                                        <i class="mat-icon">@(_ytmDesktopFacade.ServerState.Status is WidgetServerStatus.Running or WidgetServerStatus.Degraded ? "stop" : "play_arrow")</i>
                                     </span>
-                                    <span>@(_webSocketService.IsRunning ? "Stop" : "Start") Server</span>
+                                    <span>@(_ytmDesktopFacade.ServerState.Status is WidgetServerStatus.Running or WidgetServerStatus.Degraded ? "Stop" : "Start") Server</span>
                                 </button>
                             </div>
                         </div>
@@ -82,11 +102,12 @@
 
                     <div class="columns">
                         <div class="field column">
-                            <label class="label">Allow Audio Stream <small class=" is-size-7 has-text-danger">Requires Server Restart</small></label>
+                            <label class="label">Allow Audio Stream</label>
                             <div class="control is-expanded">
                                 <Toggle @bind-Value="_allowAudioStream" OffLabel="Disabled" OnLabel="Enabled"/>
                             </div>
-                            <p class="help">This allows the client to stream the audio from the server</p>
+                            <p class="help">This allows the client to stream audio from the server.</p>
+                            <p class="help">Changes are applied when you save the settings.</p>
                             <p class="help">Default: <code>Disabled</code></p>
                         </div>
 
@@ -141,7 +162,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach (var entry in _settingsService.GetAppSettings().Blacklist)
+                        @foreach (var entry in _settingsService.GetBlacklistEntries())
                         {
                             <tr @key="entry.Url">
                                 <td>@entry.Url</td>
@@ -152,7 +173,7 @@
                             </tr>
                         }
 
-                        @if (_settingsService.GetAppSettings().Blacklist.Count == 0)
+                        @if (_settingsService.GetBlacklistEntries().Count == 0)
                         {
                             <tr>
                                 <td colspan="3" class="has-text-centered">Never gonna blacklist you up!</td>

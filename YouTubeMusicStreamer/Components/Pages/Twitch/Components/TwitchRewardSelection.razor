@@ -1,15 +1,18 @@
 ﻿<div class="field has-addons">
     <div class="control is-expanded">
         <div class="select is-fullwidth">
-            @if (twitchService.Rewards.Count == 0)
+            @if (twitchRewardsFacade.Rewards.Count == 0)
             {
                 <option value="" disabled>No custom rewards found</option>
             }
             else
             {
-                <select @bind="Value">
-                    <option value="">Disabled</option>
-                    @foreach (var reward in twitchService.Rewards)
+                <select @bind="Value" disabled="@Disabled">
+                    @if (IncludeDisabledOption)
+                    {
+                        <option value="">Disabled</option>
+                    }
+                    @foreach (var reward in twitchRewardsFacade.Rewards)
                     {
                         <option @key="reward.Id" value="@reward.Id">@reward.Title</option>
                     }
@@ -18,7 +21,7 @@
         </div>
     </div>
     <div class="control">
-        <button type="submit" class="button is-primary @(_refreshing ? "is-loading" : "")" @onclick="ReloadRewards" disabled="@_refreshing">
+        <button type="submit" class="button is-primary @(twitchRewardsFacade.IsRefreshing ? "is-loading" : "")" @onclick="ReloadRewardsAsync" disabled="@twitchRewardsFacade.IsRefreshing">
             Reload
         </button>
     </div>

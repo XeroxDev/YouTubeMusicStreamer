@@ -26,36 +26,63 @@ using YouTubeMusicStreamer.Services.Twitch.Interfaces;
 
 namespace YouTubeMusicStreamer.Services.Twitch.Implementations;
 
-public sealed class TwitchChatService(ILogger<TwitchChatService> logger, SettingsService settingsService) : ITwitchChatService
+public sealed class TwitchChatService(ILogger<TwitchChatService> logger, SettingsService settingsService, ITwitchChatClientFactory chatClientFactory) : ITwitchChatService
 {
-    private readonly TwitchClient _client = new();
+    private ITwitchChatClient _client = chatClientFactory.Create();
     private string _channelName = string.Empty;
+    private readonly HashSet<string> _joinedChannels = [];
 
-    public Task ConnectAsync(string username, string token)
+    public async Task ConnectAsync(string username, string token, string channelLogin)
     {
-        _channelName = username;
-        var credentials = new ConnectionCredentials(username, token);
-        _client.OnConnected += OnConnected;
-        _client.Initialize(credentials, username);
+        await DisconnectAsync();
+        _client = chatClientFactory.Create();
+
+        _channelName = channelLogin;
+        _joinedChannels.Clear();
+        var connected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var joined = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void OnConnected(object? sender, TwitchChatConnectedEventArgs e)
+        {
+            connected.TrySetResult();
+            if (!HasJoinedChannel(_channelName))
+            {
+                _client.JoinChannel(_channelName);
+            }
+        }
+
+        void OnJoinedChannel(object? sender, TwitchChatJoinedChannelEventArgs e)
+        {
+            var joinedChannel = NormalizeChannel(e.Channel);
+            _joinedChannels.Add(joinedChannel);
+            if (joinedChannel == NormalizeChannel(_channelName))
+                joined.TrySetResult();
+        }
+
+        _client.Connected += OnConnected;
+        _client.JoinedChannel += OnJoinedChannel;
+        _client.Initialize(username, token, channelLogin);
         _client.Connect();
-        logger.LogInformation("Connected to channel {Channel}", username);
-        return Task.CompletedTask;
-    }
 
-    private void OnConnected(object? sender, OnConnectedArgs e)
-    {
-        if (!settingsService.GetAppSettings().TwitchSendMessageOnConnect) return;
-
-        var message = settingsService.GetAppSettings().TwitchConnectMessage;
-        if (string.IsNullOrEmpty(message)) return;
-        _client.SendMessage(string.IsNullOrWhiteSpace(_channelName) ? e.AutoJoinChannel : _channelName, message);
+        try
+        {
+            await WaitAsync(connected.Task, TimeSpan.FromSeconds(10), "Timed out while connecting to Twitch chat.");
+            await WaitAsync(joined.Task, TimeSpan.FromSeconds(10), "Timed out while joining the Twitch chat channel.");
+            SendConnectMessageIfConfigured();
+            logger.LogInformation("Connected to channel {Channel} as {Username}", channelLogin, username);
+        }
+        finally
+        {
+            _client.Connected -= OnConnected;
+            _client.JoinedChannel -= OnJoinedChannel;
+        }
     }
 
     public Task DisconnectAsync()
     {
-        _client.OnConnected -= OnConnected;
-        if (!_client.IsConnected) return Task.CompletedTask;
-        _client.Disconnect();
+        _joinedChannels.Clear();
+        if (_client.IsConnected)
+            _client.Disconnect();
         return Task.CompletedTask;
     }
 
@@ -69,13 +96,14 @@ public sealed class TwitchChatService(ILogger<TwitchChatService> logger, Setting
 
         try
         {
+            var targetChannel = string.IsNullOrWhiteSpace(_channelName) ? senderMessage.BroadcasterUserLogin : _channelName;
             if (asReply)
             {
-                _client.SendReply(senderMessage.BroadcasterUserLogin, senderMessage.MessageId, message);
+                _client.SendReply(targetChannel, senderMessage.MessageId, message);
             }
             else
             {
-                _client.SendMessage(senderMessage.BroadcasterUserLogin, message);
+                _client.SendMessage(targetChannel, message);
             }
         }
         catch (Exception ex)
@@ -83,4 +111,77 @@ public sealed class TwitchChatService(ILogger<TwitchChatService> logger, Setting
             logger.LogError(ex, "Chat send failed");
         }
     }
+
+    private void SendConnectMessageIfConfigured()
+    {
+        var twitchSettings = settingsService.GetTwitchSettings();
+        if (!twitchSettings.SendMessageOnConnect)
+            return;
+
+        var message = twitchSettings.ConnectMessage;
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        _client.SendMessage(_channelName, message);
+    }
+
+    private bool HasJoinedChannel(string channelName)
+    {
+        var normalizedTarget = NormalizeChannel(channelName);
+        return _joinedChannels.Contains(normalizedTarget);
+    }
+
+    private static string NormalizeChannel(string? channelName) =>
+        (channelName ?? string.Empty).Trim().TrimStart('#').ToLowerInvariant();
+
+    private static async Task WaitAsync(Task task, TimeSpan timeout, string errorMessage)
+    {
+        var completed = await Task.WhenAny(task, Task.Delay(timeout));
+        if (completed != task)
+            throw new TimeoutException(errorMessage);
+
+        await task;
+    }
+}
+
+public sealed class TwitchChatClientFactory : ITwitchChatClientFactory
+{
+    public ITwitchChatClient Create() => new TwitchLibChatClientAdapter(new TwitchClient());
+}
+
+internal sealed class TwitchLibChatClientAdapter : ITwitchChatClient
+{
+    private readonly TwitchClient _client;
+
+    public TwitchLibChatClientAdapter(TwitchClient client)
+    {
+        _client = client;
+        _client.OnConnected += HandleConnected;
+        _client.OnJoinedChannel += HandleJoinedChannel;
+    }
+
+    public event EventHandler<TwitchChatConnectedEventArgs>? Connected;
+    public event EventHandler<TwitchChatJoinedChannelEventArgs>? JoinedChannel;
+
+    public bool IsConnected => _client.IsConnected;
+
+    public void Initialize(string username, string token, string channelLogin)
+    {
+        var credentials = new ConnectionCredentials(username, token);
+        _client.Initialize(credentials, channelLogin);
+    }
+
+    public void Connect() => _client.Connect();
+
+    public void Disconnect() => _client.Disconnect();
+
+    public void JoinChannel(string channelName) => _client.JoinChannel(channelName);
+
+    public void SendReply(string channelName, string messageId, string message) => _client.SendReply(channelName, messageId, message);
+
+    public void SendMessage(string channelName, string message) => _client.SendMessage(channelName, message);
+
+    private void HandleConnected(object? sender, OnConnectedArgs args) => Connected?.Invoke(this, new TwitchChatConnectedEventArgs());
+
+    private void HandleJoinedChannel(object? sender, OnJoinedChannelArgs args) => JoinedChannel?.Invoke(this, new TwitchChatJoinedChannelEventArgs(args.Channel));
 }

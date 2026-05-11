@@ -1,6 +1,7 @@
 ﻿@page "/twitch"
 @using YouTubeMusicStreamer.Components.Pages.Twitch.Components
-@using YouTubeMusicStreamer.Utils
+@using YouTubeMusicStreamer.Services.App
+@inject IAppIdentitySource AppIdentitySource
 
 <PageHeader Title="Twitch Settings" SubTitle="Here you can configure your Twitch Integration Settings."></PageHeader>
 
@@ -10,15 +11,6 @@
             <div class="card-content">
                 <div class="content is-flex is-flex-direction-column is-gap-1">
                     <div class="columns">
-                        @*<div class="field column">
-                            <label class="label">Twitch Chat Channel <small class=" is-size-7 has-text-danger">Requires Restart</small></label>
-                            <div class="control is-expanded">
-                                <input class="input" type="text" placeholder="Twitch Chat Channel" @bind="_twitchChatChannel">
-                            </div>
-                            <p class="help">The Twitch Chat Channel the application should connect to.</p>
-                            <p class="help">Default: <code>@CoalesceEmpty(twitchService.Username, "Connected account's channel")</code></p>
-                        </div>*@
-
                         <div class="field column">
                             <label class="label">Command Prefix</label>
                             <div class="control is-expanded">
@@ -45,7 +37,7 @@
                                 <input class="input" type="text" placeholder="Connect Message" @bind="_twitchConnectMessage">
                             </div>
                             <p class="help">The message that should be sent when the application connects to the Twitch Chat.</p>
-                            <p class="help">Default: <code>@AppUtils.AppName connected</code></p>
+                            <p class="help">Default: <code>@AppIdentitySource.AppName connected</code></p>
                         </div>
                     </div>
                 </div>

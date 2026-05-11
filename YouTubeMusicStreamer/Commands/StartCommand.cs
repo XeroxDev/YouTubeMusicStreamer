@@ -1,90 +1,49 @@
-﻿// This file is part of YouTubeMusicStreamer.
-// Copyright (C) 2025 Dominic Ris
-// 
-// YouTubeMusicStreamer is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version (the "AGPLv3").
-// 
-// YouTubeMusicStreamer is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Affero General Public License for more details.
-// 
-// For full license text, see the LICENSE file in the project’s root directory.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
-
-using System.Net.Http.Json;
 using JetBrains.Annotations;
 using YouTubeMusicStreamer.Attributes;
-using YouTubeMusicStreamer.Models;
 using YouTubeMusicStreamer.Services.Commands;
-using YouTubeService = YouTubeMusicStreamer.Services.YouTube.YouTubeService;
+using YouTubeMusicStreamer.Services.Commands.Workflows;
 
 namespace YouTubeMusicStreamer.Commands;
 
 [Command("Starts playing a song.", false, 600, defaultResponse: "The song {title} by {author} has been started.")]
-public class StartCommand(CommandBag bag) : CommandBase(bag)
+public sealed class StartCommand(IYouTubeCommandWorkflow youTubeWorkflow)
 {
+    [CommandExecution]
     [UsedImplicitly]
-    protected async Task<CommandExecutionResult<StartResult>> ExecuteCommandLogicAsync(
-        [Placeholder("The URL the user provided")]
-        string url
-    )
+    private async Task<CommandResult<StartResult>> ExecuteCommandLogicAsync(
+        CommandContext context,
+        [CommandArgument(RestOfInput = true)]
+        [Placeholder("The URL the user provided")] string url)
     {
-        if (Bag.YouTubeService.RestClient is null)
+        var result = await youTubeWorkflow.StartSongAsync(url);
+        return result.Status switch
         {
-            return new CommandExecutionResult<StartResult>(false);
-        }
-
-        var videoId = YouTubeService.GetVideoId(url);
-        if (videoId is null)
-        {
-            return new CommandExecutionResult<StartResult>(false);
-        }
-
-        var blacklist = Bag.SettingsService.GetAppSettings().Blacklist;
-
-        if (blacklist.Any(b => b.Url.ToString().Contains(videoId)))
-        {
-            return new CommandExecutionResult<StartResult>(false);
-        }
-
-        using var httpClient = new HttpClient();
-
-        var response = await httpClient.GetAsync($"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={videoId}");
-        if (!response.IsSuccessStatusCode)
-        {
-            return new CommandExecutionResult<StartResult>(false);
-        }
-
-        var embed = await response.Content.ReadFromJsonAsync<YouTubeEmbed>();
-
-        await Bag.YouTubeService.RestClient.ChangeVideo(videoId);
-
-        return new CommandExecutionResult<StartResult>(true, new StartResult
-        {
-            Title = embed?.Title ?? string.Empty,
-            Author = embed?.AuthorName ?? string.Empty,
-            Channel = embed?.AuthorUrl ?? string.Empty,
-            Url = embed?.Html ?? string.Empty
-        });
+            YouTubeWorkflowStatus.Success when result.Value is not null => CommandResult<StartResult>.Fulfilled(new StartResult
+            {
+                Title = result.Value.Title,
+                Author = result.Value.Author,
+                Channel = result.Value.Channel,
+                Url = result.Value.Url
+            }),
+            YouTubeWorkflowStatus.InvalidInput => CommandResult<StartResult>.BadInput(CommandExecutionReason.InvalidArgument, result.Message),
+            YouTubeWorkflowStatus.Blocked => CommandResult<StartResult>.Blocked(CommandExecutionReason.MissingIntegration, result.Message),
+            YouTubeWorkflowStatus.Unavailable => CommandResult<StartResult>.Blocked(CommandExecutionReason.MissingIntegration, result.Message),
+            _ => CommandResult<StartResult>.Blocked(CommandExecutionReason.MissingIntegration, "Unable to start the requested song.")
+        };
     }
 
-    public class StartResult
+    public sealed class StartResult
     {
         [Placeholder("The title of the started song.")]
-        public string Title { [UsedImplicitly] get; init; } = "";
+        public string Title { get; init; } = string.Empty;
 
         [Placeholder("The author of the started song.")]
-        public string Author { [UsedImplicitly] get; init; } = "";
+        public string Author { get; init; } = string.Empty;
 
         [Placeholder("A link to the channel of the started song.")]
-        public string Channel { [UsedImplicitly] get; init; } = "";
+        public string Channel { get; init; } = string.Empty;
 
         [Placeholder("A link to listen to the started song.")]
-        public string Url { [UsedImplicitly] get; init; } = "";
+        public string Url { get; init; } = string.Empty;
     }
 }

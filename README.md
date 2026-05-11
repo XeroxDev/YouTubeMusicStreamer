@@ -13,16 +13,18 @@ YouTube Music Streamer is a simple app, that allows you to combine [YouTube Musi
 From widgets to commands, everything is possible and the best part, customizable to your liking!
 
 ## Features
-- **Widgets**: Use some of the pre-made widgets to display information about the currently playing song, or create your own custom widgets.
-- **Commands**: Use commands to control YouTube Music, like play, pause, skip, and more. Define your own prefixes, command names, responses and more. Don't like `!info`? Change it to `music info` and make it look more natural.
-- **Queue**: View the current queue and control it. Add, remove, or reorder songs in the queue.
-- **Blacklist**: Prevent certain songs from being played in your stream. This is useful for avoiding copyright issues or if you don't want to be rickrolled.
-- **Bits and Points**: Hook the commands up to Twitch Bits or Channel Points.
-- **Free & Open Source**: The app is free and open source. You can contribute to the project, report issues, or just check out the code.
-- **Installer & Portable**: The app comes with an installer and a portable version. You can choose the one that suits you best.
-- And much more!
+- **🤖 Autopilot Rewards**: Fully managed Twitch Channel Point rewards. The app automatically creates rewards, approves successful requests, and refunds points on failure.
+- **🤖 Dedicated Bot Support**: Connect a separate Twitch account for chat responses to keep your broadcaster chat clean.
+- **⚡ Zero-Restart Settings**: Change audio devices, log levels, or volume settings and see them apply instantly without restarting.
+- **🗄️ Robust Persistence**: Powered by SQLite for industrial-grade reliability. Your queue and settings are always safe.
+- **🚨 Health & Diagnostics**: A dedicated interface showing the live status of every connection and subsystem with one-click support reports.
+- **🖼️ Independent Widgets**: Premade overlays that stay active even if YouTube Music is closed, showing a professional "Waiting for Music" state.
+- **⌨️ Customizable Commands**: Control playback with your own prefixes, command names, and responses. Supports Bits and Channel Points.
+- **🛡️ Precise Blacklist**: Prevent specific songs from playing on stream using exact Video ID matching.
+- **📦 Installer & Portable**: Choose the distribution that fits your setup best.
+- **Free & Open Source**: Genuinely free, open source (AGPL v3.0), and community-driven.
 
-For even more information, images and a detailed feature list, visit the [official help desk][help-desk].
+For even more information, images, and a detailed "Autopilot" change map, see [named_releases/v1.1-The-Autopilot-Update.md](named_releases/v1.1-The-Autopilot-Update.md) or visit the [official help desk][help-desk].
 
 ## Setup
 To get started, you need to download the app from the [releases page][release-url]. Also, you need to have the [YouTube Music Desktop App][ytmdesktop-url] installed, as this app is just a companion app for it.

@@ -1,4 +1,5 @@
 ﻿@page "/logging"
+@using YouTubeMusicStreamer.Services.App.Diagnostics
 
 <PageHeader Title="Logging" SubTitle="Here you can access everything logging related."></PageHeader>
 
@@ -9,7 +10,7 @@
                 <div class="content is-flex is-flex-direction-column is-gap-1">
                     <div class="columns">
                         <div class="field column">
-                            <label class="label">Log Level <span class="has-text-danger is-size-7">Requires restart</span></label>
+                            <label class="label">Log Level</label>
                             <div class="control is-expanded">
                                 <div class="select is-fullwidth">
                                     <select @bind="_logLevel">
@@ -20,17 +21,94 @@
                                     </select>
                                 </div>
                             </div>
-                            <p class="help">Set the log level for the application.</p>
+                            <p class="help">Set the log level for the application. Changes are applied when you save.</p>
                         </div>
                     </div>
 
                     <button class="button is-info" @onclick="OpenLogFolder">Open Log Folder</button>
+                    <button class="button is-link" @onclick="CopyDiagnosticsSummary">Copy Diagnostics Summary</button>
                 </div>
             </div>
             <footer class="card-footer">
                 <button class="button is-ghost card-footer-item" @onclick="() => ResetGlobalSettings()">Reset</button>
                 <button class="button is-ghost card-footer-item" @onclick="SaveGlobalSettings">Save</button>
             </footer>
+        </div>
+    </TabPage>
+
+    <TabPage Text="Diagnostics" Icon="warning">
+        <div class="card">
+            <div class="card-content">
+                <div class="content mb-4">
+                    <h4 class="mb-3">Current Health</h4>
+                    <div class="columns is-multiline">
+                        @foreach (var summary in _healthSummaries)
+                        {
+                            <div class="column is-half">
+                                <article class="diagnostic-entry health-summary-card">
+                                    <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap" style="gap: 0.5rem;">
+                                        <strong>@summary.Name</strong>
+                                        <span class="health-badge @($"health-badge-{summary.Tone}")">@summary.Status</span>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(summary.Detail))
+                                    {
+                                        <p class="mb-0 mt-2 health-summary-detail">@summary.Detail</p>
+                                    }
+                                </article>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="buttons mb-3">
+                    <button class="button is-danger is-light" @onclick="ClearDiagnostics" disabled="@(_recentDiagnostics.Count == 0)">Clear Diagnostics</button>
+                </div>
+                @if (_recentDiagnostics.Count == 0)
+                {
+                    <p>No diagnostics recorded.</p>
+                }
+                else
+                {
+                    <div class="content is-flex is-flex-direction-column is-gap-1">
+                        @foreach (var diagnostic in _recentDiagnostics)
+                        {
+                            <article class="diagnostic-entry">
+                                <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap" style="gap: 0.5rem;">
+                                    <strong>@diagnostic.Summary</strong>
+                                    <span class="tag @(diagnostic.Severity switch
+                                                      {
+                                                          AppDiagnosticSeverity.Info => "is-info",
+                                                          AppDiagnosticSeverity.Warning => "is-warning",
+                                                          AppDiagnosticSeverity.Error => "is-danger",
+                                                          _ => "is-info"
+                                                      })">
+                                        @diagnostic.Severity
+                                    </span>
+                                </div>
+                                <p class="mb-1">
+                                    <strong>@diagnostic.Subsystem</strong> / @diagnostic.Category
+                                    <span class="has-text-grey">at @diagnostic.CreatedAtUtc.ToLocalTime().ToString("g")</span>
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(diagnostic.Detail))
+                                {
+                                    <p class="mb-1">@diagnostic.Detail</p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(diagnostic.ExceptionDisplayText))
+                                {
+                                    <button class="button is-small is-ghost diagnostic-details-toggle" @onclick="() => ToggleDiagnosticExpansion(diagnostic.Id)">
+                                        @(IsDiagnosticExpanded(diagnostic.Id) ? "Hide technical details" : "Show technical details")
+                                    </button>
+
+                                    @if (IsDiagnosticExpanded(diagnostic.Id))
+                                    {
+                                        <pre class="diagnostic-exception">@diagnostic.ExceptionDisplayText</pre>
+                                    }
+                                }
+                            </article>
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </TabPage>
 
@@ -56,3 +134,73 @@
         </div>
     </TabPage>
 </TabControl>
+
+<style>
+    .diagnostic-entry {
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .diagnostic-exception {
+        margin: 0;
+        padding: 1rem;
+        white-space: pre-wrap;
+        border-radius: 0.5rem;
+        background-color: rgba(0, 0, 0, 0.35);
+    }
+
+    .diagnostic-details-toggle {
+        padding-left: 0;
+        color: var(--bulma-link-text);
+    }
+
+    .health-summary-card {
+        min-height: 7rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .health-summary-detail {
+        min-height: 1.5rem;
+    }
+
+    .health-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 7.25rem;
+        padding: 0.45rem 0.85rem;
+        border-radius: 0.6rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .health-badge-success {
+        background-color: #36c17b;
+        color: #0b1f14;
+    }
+
+    .health-badge-warning {
+        background-color: #f5a524;
+        color: #2a1a05;
+    }
+
+    .health-badge-danger {
+        background-color: #ff5449;
+        color: #fff;
+    }
+
+    .health-badge-info {
+        background-color: #42a5c7;
+        color: #041a23;
+    }
+
+    .health-badge-muted {
+        background-color: #7c8591;
+        color: #fff;
+    }
+</style>

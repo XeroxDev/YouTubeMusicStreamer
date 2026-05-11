@@ -1,14 +1,7 @@
-﻿@using Blazored.Toast.Configuration
-@using XeroxDev.YTMDesktop.Companion.Enums
-@using YouTubeMusicStreamer.Services.App
-@using YouTubeMusicStreamer.Services.Twitch
-@using YouTubeMusicStreamer.Utils
-@using YouTubeService = YouTubeMusicStreamer.Services.YouTube.YouTubeService
+﻿@using YouTubeMusicStreamer.Services.App
 @inherits LayoutComponentBase
 
-<BlazoredToasts Timeout="10" MaxToastCount="5" ShowProgressBar="true" PauseProgressOnHover="true"
-                IconType="IconType.Material" SuccessIcon="check_circle" InfoIcon="info" WarningIcon="warning" ErrorIcon="error"
-/>
+<AppNotificationHost />
 
 <main id="page">
     <NavMenu/>
@@ -18,16 +11,15 @@
 </main>
 
 @code {
-    [Inject] private IToastService ToastService { get; set; } = null!;
-    [Inject] private YouTubeService YouTubeService { get; set; } = null!;
-    [Inject] private TwitchService TwitchService { get; set; } = null!;
+    [Inject] private IAppToastService ToastService { get; set; } = null!;
+    [Inject] private AppNotificationBridge NotificationBridge { get; set; } = null!;
     [Inject] private VersionService VersionService { get; set; } = null!;
-
+    [Inject] private IAppIdentitySource AppIdentitySource { get; set; } = null!;
+    [Inject] private IAppLaunchState AppLaunchState { get; set; } = null!;
+    
     protected override async Task OnInitializedAsync()
     {
-        YouTubeService.OnError += (_, e) => OnError("YouTube", e);
-        YouTubeService.OnConnectionChange += OnConnectionChange;
-        TwitchService.OnError += (_, e) => OnError("Twitch", e);
+        NotificationBridge.Initialize();
 
         await base.OnInitializedAsync();
     }
@@ -44,16 +36,14 @@
 
     private async Task CheckForUpdatesAsync()
     {
-        if (AppUtils.FirstInstall is { } firstInstall)
+        if (AppLaunchState.ConsumeFirstInstallVersion() is { } firstInstall)
         {
-            ToastService.ShowSuccess($"You successfully installed {AppUtils.AppName} v{firstInstall}");
-            AppUtils.FirstInstall = null;
+            ToastService.ShowSuccess($"You successfully installed {AppIdentitySource.AppName} v{firstInstall}");
         }
 
-        if (AppUtils.Updated is { } updated)
+        if (AppLaunchState.ConsumeUpdatedVersion() is { } updated)
         {
-            ToastService.ShowSuccess($"You successfully updated {AppUtils.AppName} to v{updated}");
-            AppUtils.Updated = null;
+            ToastService.ShowSuccess($"You successfully updated {AppIdentitySource.AppName} to v{updated}");
         }
 
         if (!VersionService.IsInstalled)
@@ -66,32 +56,7 @@
 
         if (VersionService.Status == VersionService.UpdateStatus.Available)
         {
-            ToastService.ShowInfo($"""A new version of {AppUtils.AppName} is available. Go to "About" to see the changelog and download the update.""");
+            ToastService.ShowInfo($"""A new version of {AppIdentitySource.AppName} is available. Go to "About" to see the changelog and download the update.""");
         }
     }
-
-    private void OnConnectionChange(object? sender, ESocketState e)
-    {
-        switch (e)
-        {
-            case ESocketState.Connected:
-                ToastService.ShowSuccess("Connected to YTMDesktop");
-                break;
-            case ESocketState.Disconnected:
-                ToastService.ShowWarning("Disconnected from YTMDesktop");
-                break;
-            case ESocketState.Connecting:
-                ToastService.ShowInfo("Connecting to YTMDesktop");
-                break;
-            case ESocketState.Error:
-                ToastService.ShowError("Error connecting to YTMDesktop");
-                break;
-            default:
-                ToastService.ShowError("Unknown connection state");
-                break;
-        }
-    }
-
-    private void OnError(string service, Exception e) => ToastService.ShowError($"[{service}]: {e.Message}");
-
 }

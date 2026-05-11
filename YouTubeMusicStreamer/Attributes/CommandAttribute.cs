@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
+using YouTubeMusicStreamer.Services.App.Persistence;
+
 namespace YouTubeMusicStreamer.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
@@ -26,4 +28,5 @@ public sealed class CommandAttribute(string description, bool defaultEnabled = t
     public uint DefaultCooldown { get; } = defaultCooldown;
     public string DefaultResponse { get; } = defaultResponse;
     public uint DefaultRequiredBits { get; set; } = defaultRequiredBits;
+    public CommandAccessLevel DefaultAccess { get; set; } = CommandAccessLevel.Everyone;
 }

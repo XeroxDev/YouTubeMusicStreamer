@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with YouTubeMusicStreamer. If not, see <https://www.gnu.org/licenses/>.
 
-using TwitchLib.EventSub.Core.SubscriptionTypes.Channel;
+using System.Reflection;
 
 namespace YouTubeMusicStreamer.Services.Commands.Binding;
 
 public interface IArgumentBinder
 {
-    Task<BoundCommandResult> BindAndInvokeAsync(object handler, ChannelChatMessage message, IReadOnlyList<string> tokens, int bits);
+    Task<BoundCommandResult> BindAndInvokeAsync(object handler, MethodInfo method, CommandContext context, IReadOnlyList<string> tokens);
 }

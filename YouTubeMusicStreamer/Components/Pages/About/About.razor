@@ -1,6 +1,6 @@
 ﻿@page "/about"
 @using YouTubeMusicStreamer.Services.App
-@using YouTubeMusicStreamer.Utils
+@inject IAppIdentitySource AppIdentitySource
 <div class="card">
     <div class="card-content">
         <div class="is-flex is-gap-2 is-flex-direction-column is-align-items-center is-justify-content-center has-text-centered">
@@ -8,7 +8,7 @@
             <img src="favicon.svg" alt="Logo" width="100" height="100"/>
 
             <!-- App Title -->
-            <h1 class="title is-2 has-text-primary">@AppUtils.AppName</h1>
+            <h1 class="title is-2 has-text-primary">@AppIdentitySource.AppName</h1>
 
             <!-- Info Grid -->
             <div class="columns is-multiline">
@@ -49,6 +49,7 @@
                                                    {
                                                        VersionService.UpdateStatus.Available => "is-primary",
                                                        VersionService.UpdateStatus.PendingRestart => "is-success",
+                                                       VersionService.UpdateStatus.CheckFailed => "is-warning",
                                                        _ => "is-info"
                                                    }) update-button"
                             @onclick="versionService.ButtonCallback"
@@ -168,11 +169,35 @@
     </button>
   </header>
 
-  <div class="card-content collapsible closed" data-collapse-third-party-licenses="closed">
+    <div class="card-content collapsible closed" data-collapse-third-party-licenses="closed">
     <div class="content">
-      @if (_thirdPartyLicenses.Count == 0)
+      @if (!_thirdPartyLicensesLoaded)
       {
         <p class="has-text-centered">Loading third-party licenses…</p>
+      }
+      else if (!string.IsNullOrWhiteSpace(_thirdPartyLicensesError))
+      {
+        <article class="message is-danger">
+            <div class="message-body">
+                @_thirdPartyLicensesError
+            </div>
+        </article>
+      }
+      else if (!string.IsNullOrWhiteSpace(_thirdPartyLicenseActionError))
+      {
+        <article class="message is-warning">
+            <div class="message-body">
+                @_thirdPartyLicenseActionError
+            </div>
+        </article>
+      }
+      else if (_thirdPartyLicenses.Count == 0)
+      {
+        <article class="message is-warning">
+            <div class="message-body">
+                No packaged third-party license data was found.
+            </div>
+        </article>
       }
       else
       {
@@ -192,11 +217,24 @@
                       </div>
                       <div class="media-right is-align-items-center">
                           <span class="tag is-info is-light mr-2">v@(license.PackageVersion)</span>
-                          <a class="tag is-danger is-light" 
-                             href="@license.LicenseUrl" 
-                             target="_blank" rel="nofollow noopener">
-                              @(license.License ?? "Unknown")
-                          </a>
+                          @if (!string.IsNullOrWhiteSpace(license.LocalLicensePath))
+                          {
+                              <button class="tag is-danger is-light button is-small" @onclick="() => OpenThirdPartyLicenseAsync(license)">
+                                  @license.LicenseDisplayName
+                              </button>
+                          }
+                          else if (!string.IsNullOrWhiteSpace(license.OnlineLicenseUrl))
+                          {
+                              <a class="tag is-danger is-light"
+                                 href="@license.OnlineLicenseUrl"
+                                 target="_blank" rel="nofollow noopener">
+                                  @license.LicenseDisplayName
+                              </a>
+                          }
+                          else
+                          {
+                              <span class="tag is-warning is-light">@license.LicenseDisplayName</span>
+                          }
                       </div>
                   </div>
 
@@ -208,6 +246,12 @@
                       <p>
                           Authors: @(string.Join(", ", (license.Authors ?? "No authors specified.").Split(',').Select(a => a.Trim())))
                       </p>
+                      @if (license.ValidationErrors.Count > 0)
+                      {
+                          <p class="has-text-warning mt-2">
+                              License data for this package required fallback handling.
+                          </p>
+                      }
                   </div>
               </div>
           }

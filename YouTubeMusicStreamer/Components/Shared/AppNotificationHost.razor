@@ -1,0 +1,121 @@
+﻿@using YouTubeMusicStreamer.Services.App
+@implements IDisposable
+@inject IAppToastService NotificationService
+
+<style>
+    @@keyframes app-notification-progress {
+        from { width: var(--progress-start); }
+        to { width: 0; }
+    }
+</style>
+
+@if (NotificationService.Notifications.Count > 0)
+{
+    <div style="position: fixed; top: 1rem; right: 1rem; z-index: 1000; width: min(21rem, calc(100vw - 2rem)); display: flex; flex-direction: column; gap: 0.5rem;">
+        @foreach (var notification in NotificationService.Notifications)
+        {
+            <div class="notification app-notification @GetNotificationCssClass(notification.Level)"
+                 style="@GetNotificationStyle(notification.Level)"
+                 @key="@($"{notification.Id}:{notification.Revision}")"
+                 @onmouseenter="() => Pause(notification.Id)"
+                 @onmouseleave="() => Resume(notification.Id)">
+                <div style="position: relative; padding: 0.9rem 1rem 0.8rem 1rem;">
+                    <button class="delete" style="@GetCloseButtonStyle(notification.Level)" @onclick="() => Dismiss(notification.Id)"></button>
+                    <div class="is-flex is-justify-content-space-between is-align-items-center mb-2 pr-6" style="gap: 0.75rem;">
+                        <strong>@GetNotificationTitle(notification.Level)</strong>
+                        @if (notification.RepeatCount > 1)
+                        {
+                            <span class="tag is-dark">@($"x{notification.RepeatCount}")</span>
+                        }
+                    </div>
+                    <p>@notification.Message</p>
+                </div>
+                @if (notification.AutoDismiss)
+                {
+                    <div style="height: 0.18rem; background: rgba(255,255,255,0.18);">
+                        <div class="app-notification-progress" style="@GetProgressStyle(notification)"></div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private readonly HashSet<Guid> _pausedNotifications = [];
+
+    protected override void OnInitialized()
+    {
+        NotificationService.NotificationsChanged += OnNotificationsChanged;
+    }
+
+    public void Dispose()
+    {
+        NotificationService.NotificationsChanged -= OnNotificationsChanged;
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dismiss(Guid id) => NotificationService.Dismiss(id);
+
+    private void Pause(Guid id)
+    {
+        _pausedNotifications.Add(id);
+        NotificationService.Pause(id);
+        StateHasChanged();
+    }
+
+    private void Resume(Guid id)
+    {
+        _pausedNotifications.Remove(id);
+        NotificationService.Resume(id);
+        StateHasChanged();
+    }
+
+    private void OnNotificationsChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    private static string GetNotificationTitle(AppNotificationLevel level) => level switch
+    {
+        AppNotificationLevel.Success => "Success",
+        AppNotificationLevel.Info => "Info",
+        AppNotificationLevel.Warning => "Warning",
+        AppNotificationLevel.Error => "Error",
+        _ => "Info"
+    };
+
+    private static string GetNotificationCssClass(AppNotificationLevel level) => level switch
+    {
+        AppNotificationLevel.Success => "is-success",
+        AppNotificationLevel.Info => "is-info",
+        AppNotificationLevel.Warning => "is-warning",
+        AppNotificationLevel.Error => "is-danger",
+        _ => string.Empty
+    };
+
+    private static string GetNotificationStyle(AppNotificationLevel level)
+    {
+        const string baseStyle = "padding: 0; overflow: hidden; box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,0.25); color: white;";
+        var background = level switch
+        {
+            AppNotificationLevel.Success => "#2e9f6b",
+            AppNotificationLevel.Info => "#2f86ad",
+            AppNotificationLevel.Warning => "#c98314",
+            AppNotificationLevel.Error => "#df4a43",
+            _ => "#2f86ad"
+        };
+
+        return $"{baseStyle} background-color: {background};";
+    }
+
+    private static string GetCloseButtonStyle(AppNotificationLevel level)
+    {
+        const string baseStyle = "position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.22); filter: invert(1);";
+        return baseStyle;
+    }
+
+    private string GetProgressStyle(AppNotification notification)
+    {
+        var durationMs = Math.Max(1, (int)notification.Duration.TotalMilliseconds);
+        var playState = _pausedNotifications.Contains(notification.Id) ? "paused" : "running";
+        return $"height: 100%; width: 100%; background: rgba(255,255,255,0.8); --progress-start: 100%; animation: app-notification-progress {durationMs}ms linear forwards; animation-play-state: {playState};";
+    }
+}

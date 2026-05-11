@@ -1,11 +1,32 @@
 ﻿<div class="content is-flex is-flex-direction-column is-gap-1">
     <div class="columns">
         <div class="field column">
-            <label class="label">Command Status</label>
+            <label class="label">Chat Mode</label>
             <div class="control is-expanded">
-                <Toggle @bind-Value="Command.CommandSettings.IsEnabled" OffLabel="Disabled" OnLabel="Enabled"/>
+                <div class="select is-fullwidth">
+                    <select @bind="ChatMode">
+                        @foreach (var chatMode in ChatModes)
+                        {
+                            <option value="@chatMode">@GetChatModeDisplay(chatMode)</option>
+                        }
+                    </select>
+                </div>
             </div>
-            <p class="help">Whether the command should be enabled or disabled</p>
+            <p class="help">Choose whether the command runs from normal chat or bits-only chat.</p>
+        </div>
+        <div class="field column">
+            <label class="label">Reward Trigger</label>
+            <div class="control is-expanded">
+                <div class="select is-fullwidth">
+                    <select @bind="RewardMode">
+                        @foreach (var rewardMode in RewardModes)
+                        {
+                            <option value="@rewardMode">@GetRewardModeDisplay(rewardMode)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <p class="help">Choose whether the command uses no reward, an existing Twitch reward, or an app-managed reward.</p>
         </div>
         <div class="field column">
             <label class="label">Trigger</label>
@@ -14,10 +35,10 @@
                     <a class="button is-static">@(CommandPrefix)</a>
                 </div>
                 <div class="control is-expanded">
-                    <input class="input" type="text" placeholder="Trigger" @bind="Command.CommandSettings.Trigger">
+                    <input class="input" type="text" placeholder="Trigger" @bind="Command.CommandConfiguration.Trigger">
                 </div>
             </div>
-            <p class="help">The trigger the user has to write into the chat</p>
+            <p class="help">The trigger the user has to write into the chat.</p>
         </div>
     </div>
 
@@ -25,7 +46,7 @@
         <div class="field column">
             <label class="label">Auto Response</label>
             <div class="control is-expanded">
-                <input class="input" type="text" placeholder="Response" @bind="Command.CommandSettings.Response">
+                <input class="input" type="text" placeholder="Response" @bind="Command.CommandConfiguration.Response">
             </div>
             <p class="help">The response that should be sent when the command is triggered. Empty for no response.</p>
             @foreach (var placeholder in Command.Placeholders)
@@ -33,36 +54,144 @@
                 <p @key="placeholder.Key" class="help"><code>@placeholder.Key</code> - @placeholder.Value</p>
             }
         </div>
+        <div class="field column">
+            <label class="label">Access Denied Response</label>
+            <div class="control is-expanded">
+                <input class="input" type="text" placeholder="This command requires moderator access." @bind="Command.CommandConfiguration.AccessDeniedResponse">
+            </div>
+            <p class="help">Optional response shown when the user does not meet the required access level. Empty uses the default message.</p>
+        </div>
     </div>
 
     <div class="columns">
         <div class="field column">
+            <label class="label">Required Access</label>
+            <div class="control is-expanded">
+                <div class="select is-fullwidth">
+                    <select @bind="RequiredAccessLevel">
+                        @foreach (var accessLevel in AccessLevels)
+                        {
+                            <option value="@accessLevel">@GetAccessDisplay(accessLevel)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <p class="help">The minimum Twitch role required for chat-triggered usage. Reward-triggered usage is allowed by the reward itself.</p>
+        </div>
+
+        <div class="field column">
             <label class="label">Cooldown</label>
             <div class="control is-expanded">
-                <input class="input" type="number" placeholder="120" @bind="Command.CommandSettings.Cooldown" min="0">
+                <input class="input" type="number" placeholder="120" @bind="Command.CommandConfiguration.Cooldown" min="0">
             </div>
             <p class="help">The cooldown in seconds between command usages. 0 for no cooldown.</p>
         </div>
 
         <div class="field column">
-            <label class="label">Required Bits</label>
+            <label class="label">Cooldown Scope</label>
             <div class="control is-expanded">
-                <input class="input" type="number" placeholder="120" @bind="Command.CommandSettings.RequiredBits" min="0">
+                <div class="select is-fullwidth">
+                    <select @bind="CooldownScope">
+                        @foreach (var scope in CooldownScopes)
+                        {
+                            <option value="@scope">@GetCooldownScopeDisplay(scope)</option>
+                        }
+                    </select>
+                </div>
             </div>
-            <p class="help">The required amount of bits to use the command. 0 for no bits required.</p>
+            <p class="help">Choose whether the cooldown is shared globally or tracked per user.</p>
         </div>
 
         <div class="field column">
-            <label class="label">Twitch Reward</label>
-            <TwitchRewardSelection @bind-Value="Command.CommandSettings.RewardId"></TwitchRewardSelection>
-            <p class="help">The (channel points) reward the user can redeem to execute this command</p>
+            <label class="label">Required Bits</label>
+            <div class="control is-expanded">
+                <input class="input" type="number" placeholder="120" @bind="RequiredBits" min="0" disabled="@(!UsesBitsMode)">
+            </div>
+            <p class="help">The required amount of bits to use the command when chat mode is set to bits only.</p>
         </div>
+
+        @if (UsesExistingReward)
+        {
+            <div class="field column">
+                <label class="label">Existing Twitch Reward</label>
+                <TwitchRewardSelection @bind-Value="RewardId" Disabled="false" IncludeDisabledOption="false"></TwitchRewardSelection>
+                <p class="help">Bind an existing channel points reward. This mode only triggers the command and does not support automatic approve/refund.</p>
+            </div>
+        }
     </div>
+
+    @if (UsesManagedReward)
+    {
+        <div class="columns">
+            <div class="field column">
+                <label class="label">Managed Reward Title</label>
+                <div class="control is-expanded">
+                    <input class="input" type="text" placeholder="Reward title" @bind="ManagedRewardTitle">
+                </div>
+                <p class="help">This title is sent to Twitch only when you explicitly create or update the managed reward.</p>
+            </div>
+            <div class="field column">
+                <label class="label">Managed Reward Cost</label>
+                <div class="control is-expanded">
+                    <input class="input" type="number" min="1" @bind="ManagedRewardCost">
+                </div>
+                <p class="help">The channel points cost for the app-managed reward.</p>
+            </div>
+            <div class="field column">
+                <label class="label">Managed Reward Prompt</label>
+                <div class="control is-expanded">
+                    <input class="input" type="text" placeholder="Optional reward prompt" @bind="ManagedRewardPrompt">
+                </div>
+                <p class="help">Optional Twitch-side prompt for the managed reward.</p>
+            </div>
+            <div class="field column">
+                <label class="label">Requires Reward Input</label>
+                <div class="control is-expanded">
+                    <Toggle @bind-Value="ManagedRewardRequiresUserInput" OffLabel="No" OnLabel="Yes" Disabled="@Command.RequiresInput"/>
+                </div>
+                <p class="help">Commands that require user input force this on so Twitch can deliver the reward input to the command.</p>
+            </div>
+        </div>
+
+        <div class="columns">
+            <div class="field column is-two-thirds">
+                <label class="label">Managed Reward Status</label>
+                <div class="is-flex is-align-items-center is-flex-wrap-wrap is-gap-2 mb-2">
+                    <span class="tag is-info is-light">App-managed</span>
+                    <span class="@ManagedRewardStatusTagCssClass">@(Command.CommandConfiguration.RewardBinding?.ManagedRewardCompatibilityState.ToString() ?? "Unknown")</span>
+                </div>
+                <p class="help">App-managed rewards support automatic approve/refund because the app owns the reward lifecycle.</p>
+                @if (!string.IsNullOrWhiteSpace(Command.CommandConfiguration.RewardBinding?.ManagedRewardCompatibilityMessage))
+                {
+                    <p class="help has-text-weight-semibold">@Command.CommandConfiguration.RewardBinding?.ManagedRewardCompatibilityMessage</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(Command.CommandConfiguration.RewardBinding?.RewardId))
+                {
+                    <p class="help"><strong>Linked Reward Id:</strong> @Command.CommandConfiguration.RewardBinding?.RewardId</p>
+                }
+            </div>
+            <div class="field column">
+                <label class="label">Managed Reward Actions</label>
+                <div class="buttons">
+                    @if (ShowsCreateAction)
+                    {
+                        <button class="button is-link" @onclick="CreateManagedRewardAsync">@PrimaryManagedRewardActionLabel</button>
+                    }
+                    @if (ShowsUpdateAction)
+                    {
+                        <button class="button is-primary" @onclick="UpdateManagedRewardAsync">@PrimaryManagedRewardActionLabel</button>
+                    }
+                    <button class="button is-info" @onclick="RefreshManagedRewardAsync">Refresh</button>
+                </div>
+                <p class="help">@ManagedRewardActionHelpText</p>
+            </div>
+        </div>
+    }
 
     <div class="columns">
         <div class="field column">
             <div class="control">
-                <button class="button is-primary" @onclick="SaveCommandSettings">
+                <button class="button is-primary" @onclick="SaveCommandSettingsAsync">
                     <span class="icon is-small"><i class="mat-icon">save</i></span>
                     <span>Save</span>
                 </button>
