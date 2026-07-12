@@ -16,6 +16,8 @@ $generatorProjectPath = Join-Path $scriptRoot "ThirdPartyLicenseGenerator\ThirdP
 $allowNetworkFallbackValue = if ($DisableNetworkFallback.IsPresent) { "false" } else { "true" }
 $noBuildArg = if ($NoBuild.IsPresent) { "--no-build" } else { "" }
 
+dotnet restore $projectFullPath
+
 dotnet run --project $generatorProjectPath $noBuildArg -- `
     --project $projectFullPath `
     --generatedRawDir $generatedRawFullPath `
